@@ -1,44 +1,54 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  ShoppingCart, 
-  Package, 
-  Users, 
-  CreditCard,
-  TrendingUp,
-  AlertTriangle,
-  Menu,
-  X
-} from "lucide-react";
+import { ShoppingCart, Package, Users, CreditCard, TrendingUp, AlertTriangle, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Dashboard from "@/components/Dashboard";
 import POSSystem from "@/components/POSSystem";
 import InventoryManagement from "@/components/InventoryManagement";
 import UtangManagement from "@/components/UtangManagement";
 import CustomerManagement from "@/components/CustomerManagement";
-
 const Index = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
-
-  const tabs = [
-    { value: "dashboard", label: "Dashboard", shortLabel: "Dash", icon: TrendingUp, color: "from-blue-500 to-blue-600" },
-    { value: "pos", label: "POS", shortLabel: "POS", icon: ShoppingCart, color: "from-green-500 to-green-600" },
-    { value: "inventory", label: "Inventory", shortLabel: "Stock", icon: Package, color: "from-purple-500 to-purple-600" },
-    { value: "utang", label: "Utang", shortLabel: "Utang", icon: CreditCard, color: "from-red-500 to-red-600" },
-    { value: "customers", label: "Customers", shortLabel: "Customers", icon: Users, color: "from-indigo-500 to-indigo-600" }
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-red-50 relative overflow-x-hidden">
+  const tabs = [{
+    value: "dashboard",
+    label: "Dashboard",
+    shortLabel: "Dash",
+    icon: TrendingUp,
+    color: "from-blue-500 to-blue-600"
+  }, {
+    value: "pos",
+    label: "POS",
+    shortLabel: "POS",
+    icon: ShoppingCart,
+    color: "from-green-500 to-green-600"
+  }, {
+    value: "inventory",
+    label: "Inventory",
+    shortLabel: "Stock",
+    icon: Package,
+    color: "from-purple-500 to-purple-600"
+  }, {
+    value: "utang",
+    label: "Utang",
+    shortLabel: "Utang",
+    icon: CreditCard,
+    color: "from-red-500 to-red-600"
+  }, {
+    value: "customers",
+    label: "Customers",
+    shortLabel: "Customers",
+    icon: Users,
+    color: "from-indigo-500 to-indigo-600"
+  }];
+  return <div className="min-h-screen bg-gradient-to-br from-orange-50 via-yellow-50 to-red-50 relative overflow-x-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 25px 25px, orange 2px, transparent 0), radial-gradient(circle at 75px 75px, red 2px, transparent 0)`,
-          backgroundSize: '100px 100px'
-        }}></div>
+        backgroundImage: `radial-gradient(circle at 25px 25px, orange 2px, transparent 0), radial-gradient(circle at 75px 75px, red 2px, transparent 0)`,
+        backgroundSize: '100px 100px'
+      }}></div>
       </div>
 
       <div className="container mx-auto px-3 py-4 max-w-7xl relative z-10">
@@ -58,14 +68,7 @@ const Index = () => {
                 </div>
                 
                 {/* Mobile Menu Toggle */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="sm:hidden"
-                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                >
-                  {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-                </Button>
+                
               </div>
             </CardContent>
           </Card>
@@ -77,25 +80,16 @@ const Index = () => {
           <div className="relative mb-6">
             {/* Desktop Navigation */}
             <TabsList className="hidden sm:grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm shadow-lg border-0 h-auto p-1 rounded-2xl">
-              {tabs.map((tab) => {
-                const isActive = activeTab === tab.value;
-                return (
-                  <TabsTrigger 
-                    key={tab.value}
-                    value={tab.value}
-                    className={`
+              {tabs.map(tab => {
+              const isActive = activeTab === tab.value;
+              return <TabsTrigger key={tab.value} value={tab.value} className={`
                       flex items-center gap-2 py-3 px-4 rounded-xl transition-all duration-300 text-sm font-medium
-                      ${isActive 
-                        ? `bg-gradient-to-r ${tab.color} text-white shadow-lg transform scale-105` 
-                        : 'hover:bg-orange-50 text-gray-600 hover:text-orange-800'
-                      }
-                    `}
-                  >
+                      ${isActive ? `bg-gradient-to-r ${tab.color} text-white shadow-lg transform scale-105` : 'hover:bg-orange-50 text-gray-600 hover:text-orange-800'}
+                    `}>
                     <tab.icon className="h-4 w-4" />
                     <span>{tab.label}</span>
-                  </TabsTrigger>
-                );
-              })}
+                  </TabsTrigger>;
+            })}
             </TabsList>
 
             {/* Mobile Navigation */}
@@ -106,23 +100,16 @@ const Index = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {(() => {
-                        const currentTab = tabs.find(t => t.value === activeTab);
-                        return currentTab ? (
-                          <>
+                      const currentTab = tabs.find(t => t.value === activeTab);
+                      return currentTab ? <>
                             <div className={`p-2 rounded-lg bg-gradient-to-r ${currentTab.color}`}>
                               <currentTab.icon className="h-5 w-5 text-white" />
                             </div>
                             <span className="font-semibold text-gray-800">{currentTab.label}</span>
-                          </>
-                        ) : null;
-                      })()}
+                          </> : null;
+                    })()}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                      className="text-gray-600"
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-gray-600">
                       <Menu className="h-5 w-5" />
                     </Button>
                   </div>
@@ -130,39 +117,26 @@ const Index = () => {
               </Card>
 
               {/* Mobile Menu Overlay */}
-              {isMobileMenuOpen && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 animate-fade-in">
+              {isMobileMenuOpen && <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 animate-fade-in">
                   <div className="absolute inset-x-0 top-0 bg-white rounded-b-3xl shadow-2xl animate-slide-in-right">
                     <div className="p-6">
                       <div className="flex items-center justify-between mb-6">
                         <h3 className="text-lg font-semibold text-gray-800">Navigation</h3>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => setIsMobileMenuOpen(false)}>
                           <X className="h-5 w-5" />
                         </Button>
                       </div>
                       
                       <div className="grid gap-3">
-                        {tabs.map((tab) => {
-                          const isActive = activeTab === tab.value;
-                          return (
-                            <button
-                              key={tab.value}
-                              onClick={() => {
-                                setActiveTab(tab.value);
-                                setIsMobileMenuOpen(false);
-                              }}
-                              className={`
+                        {tabs.map(tab => {
+                      const isActive = activeTab === tab.value;
+                      return <button key={tab.value} onClick={() => {
+                        setActiveTab(tab.value);
+                        setIsMobileMenuOpen(false);
+                      }} className={`
                                 w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 text-left
-                                ${isActive 
-                                  ? `bg-gradient-to-r ${tab.color} text-white shadow-lg transform scale-105` 
-                                  : 'bg-gray-50 hover:bg-orange-50 text-gray-700 hover:text-orange-800'
-                                }
-                              `}
-                            >
+                                ${isActive ? `bg-gradient-to-r ${tab.color} text-white shadow-lg transform scale-105` : 'bg-gray-50 hover:bg-orange-50 text-gray-700 hover:text-orange-800'}
+                              `}>
                               <div className={`p-2 rounded-lg ${isActive ? 'bg-white/20' : 'bg-white'}`}>
                                 <tab.icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-gray-600'}`} />
                               </div>
@@ -176,14 +150,12 @@ const Index = () => {
                                   {tab.value === 'customers' && 'Customer Database'}
                                 </div>
                               </div>
-                            </button>
-                          );
-                        })}
+                            </button>;
+                    })}
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
+                </div>}
             </div>
           </div>
 
@@ -211,8 +183,6 @@ const Index = () => {
           </div>
         </Tabs>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
