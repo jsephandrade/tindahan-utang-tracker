@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useStore } from "@/contexts/StoreContext";
 import { 
@@ -6,7 +5,6 @@ import {
   CreditCard, 
   AlertTriangle, 
   Users,
-  Peso,
   ShoppingBag
 } from "lucide-react";
 
