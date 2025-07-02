@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useStore } from "@/contexts/StoreContext";
 import { 
@@ -19,18 +20,18 @@ const Dashboard = () => {
     .slice(0, 5);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Today's Sales</CardTitle>
             <TrendingUp className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₱{stats.dailySales.toFixed(2)}</div>
-            <p className="text-xs text-green-100">
-              Total Sales: ₱{stats.totalSales.toFixed(2)}
+            <div className="text-xl sm:text-2xl font-bold">₱{stats.dailySales.toFixed(2)}</div>
+            <p className="text-xs text-green-100 mt-1">
+              Total: ₱{stats.totalSales.toFixed(2)}
             </p>
           </CardContent>
         </Card>
@@ -41,8 +42,8 @@ const Dashboard = () => {
             <CreditCard className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₱{stats.totalUtang.toFixed(2)}</div>
-            <p className="text-xs text-red-100">
+            <div className="text-xl sm:text-2xl font-bold">₱{stats.totalUtang.toFixed(2)}</div>
+            <p className="text-xs text-red-100 mt-1">
               This Month: ₱{stats.monthlyUtang.toFixed(2)}
             </p>
           </CardContent>
@@ -50,12 +51,12 @@ const Dashboard = () => {
 
         <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Low Stock Alert</CardTitle>
+            <CardTitle className="text-sm font-medium">Low Stock</CardTitle>
             <AlertTriangle className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.lowStockItems}</div>
-            <p className="text-xs text-orange-100">
+            <div className="text-xl sm:text-2xl font-bold">{stats.lowStockItems}</div>
+            <p className="text-xs text-orange-100 mt-1">
               Items need restocking
             </p>
           </CardContent>
@@ -63,40 +64,40 @@ const Dashboard = () => {
 
         <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
+            <CardTitle className="text-sm font-medium">Customers</CardTitle>
             <Users className="h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalCustomers}</div>
-            <p className="text-xs text-blue-100">
+            <div className="text-xl sm:text-2xl font-bold">{stats.totalCustomers}</div>
+            <p className="text-xs text-blue-100 mt-1">
               Registered customers
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Low Stock Products */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-900">
+            <CardTitle className="flex items-center gap-2 text-orange-900 text-base sm:text-lg">
               <AlertTriangle className="h-5 w-5" />
               Low Stock Products
             </CardTitle>
           </CardHeader>
           <CardContent>
             {lowStockProducts.length === 0 ? (
-              <p className="text-muted-foreground">All products are well stocked!</p>
+              <p className="text-muted-foreground text-sm">All products are well stocked!</p>
             ) : (
               <div className="space-y-3">
                 {lowStockProducts.map((product) => (
                   <div key={product.id} className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-orange-900">{product.name}</p>
-                      <p className="text-sm text-orange-600">{product.category}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-orange-900 text-sm sm:text-base truncate">{product.name}</p>
+                      <p className="text-xs sm:text-sm text-orange-600">{product.category}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-red-600">{product.stock} left</p>
+                    <div className="text-right ml-2">
+                      <p className="font-bold text-red-600 text-sm sm:text-base">{product.stock} left</p>
                       <p className="text-xs text-muted-foreground">Min: {product.minStock}</p>
                     </div>
                   </div>
@@ -109,27 +110,27 @@ const Dashboard = () => {
         {/* Recent Utang */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-900">
+            <CardTitle className="flex items-center gap-2 text-orange-900 text-base sm:text-lg">
               <CreditCard className="h-5 w-5" />
               Recent Unpaid Utang
             </CardTitle>
           </CardHeader>
           <CardContent>
             {recentUtang.length === 0 ? (
-              <p className="text-muted-foreground">No unpaid utang records!</p>
+              <p className="text-muted-foreground text-sm">No unpaid utang records!</p>
             ) : (
               <div className="space-y-3">
                 {recentUtang.map((record) => (
                   <div key={record.id} className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-red-900">{record.customerName}</p>
-                      <p className="text-sm text-red-600 truncate max-w-[200px]">{record.description}</p>
-                      <p className="text-xs text-muted-foreground">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-red-900 text-sm sm:text-base truncate">{record.customerName}</p>
+                      <p className="text-xs sm:text-sm text-red-600 truncate">{record.description}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
                         {record.createdAt.toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-red-600">₱{record.amount.toFixed(2)}</p>
+                    <div className="text-right ml-2">
+                      <p className="font-bold text-red-600 text-sm sm:text-base">₱{record.amount.toFixed(2)}</p>
                     </div>
                   </div>
                 ))}
