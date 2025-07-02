@@ -8,7 +8,9 @@ import {
   Users, 
   CreditCard,
   TrendingUp,
-  AlertTriangle
+  AlertTriangle,
+  Menu,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Dashboard from "@/components/Dashboard";
@@ -18,6 +20,7 @@ import UtangManagement from "@/components/UtangManagement";
 import CustomerManagement from "@/components/CustomerManagement";
 
 const Index = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
 
   const tabs = [
@@ -53,6 +56,16 @@ const Index = () => {
                     Your complete sari-sari store solution
                   </p>
                 </div>
+                
+                {/* Mobile Menu Toggle */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="sm:hidden"
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                >
+                  {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -60,9 +73,10 @@ const Index = () => {
 
         {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          {/* Navigation */}
+          {/* Enhanced Mobile-First Navigation */}
           <div className="relative mb-6">
-            <TabsList className="grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm shadow-lg border-0 h-auto p-1 rounded-2xl">
+            {/* Desktop Navigation */}
+            <TabsList className="hidden sm:grid w-full grid-cols-5 bg-white/80 backdrop-blur-sm shadow-lg border-0 h-auto p-1 rounded-2xl">
               {tabs.map((tab) => {
                 const isActive = activeTab === tab.value;
                 return (
@@ -83,6 +97,94 @@ const Index = () => {
                 );
               })}
             </TabsList>
+
+            {/* Mobile Navigation */}
+            <div className="sm:hidden">
+              {/* Active Tab Display */}
+              <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-0 mb-3">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {(() => {
+                        const currentTab = tabs.find(t => t.value === activeTab);
+                        return currentTab ? (
+                          <>
+                            <div className={`p-2 rounded-lg bg-gradient-to-r ${currentTab.color}`}>
+                              <currentTab.icon className="h-5 w-5 text-white" />
+                            </div>
+                            <span className="font-semibold text-gray-800">{currentTab.label}</span>
+                          </>
+                        ) : null;
+                      })()}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                      className="text-gray-600"
+                    >
+                      <Menu className="h-5 w-5" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Mobile Menu Overlay */}
+              {isMobileMenuOpen && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 animate-fade-in">
+                  <div className="absolute inset-x-0 top-0 bg-white rounded-b-3xl shadow-2xl animate-slide-in-right">
+                    <div className="p-6">
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-semibold text-gray-800">Navigation</h3>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                          <X className="h-5 w-5" />
+                        </Button>
+                      </div>
+                      
+                      <div className="grid gap-3">
+                        {tabs.map((tab) => {
+                          const isActive = activeTab === tab.value;
+                          return (
+                            <button
+                              key={tab.value}
+                              onClick={() => {
+                                setActiveTab(tab.value);
+                                setIsMobileMenuOpen(false);
+                              }}
+                              className={`
+                                w-full flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 text-left
+                                ${isActive 
+                                  ? `bg-gradient-to-r ${tab.color} text-white shadow-lg transform scale-105` 
+                                  : 'bg-gray-50 hover:bg-orange-50 text-gray-700 hover:text-orange-800'
+                                }
+                              `}
+                            >
+                              <div className={`p-2 rounded-lg ${isActive ? 'bg-white/20' : 'bg-white'}`}>
+                                <tab.icon className={`h-5 w-5 ${isActive ? 'text-white' : 'text-gray-600'}`} />
+                              </div>
+                              <div>
+                                <div className="font-medium">{tab.label}</div>
+                                <div className={`text-xs ${isActive ? 'text-white/80' : 'text-gray-500'}`}>
+                                  {tab.value === 'dashboard' && 'Overview & Analytics'}
+                                  {tab.value === 'pos' && 'Point of Sale System'}
+                                  {tab.value === 'inventory' && 'Stock Management'}
+                                  {tab.value === 'utang' && 'Credit Tracking'}
+                                  {tab.value === 'customers' && 'Customer Database'}
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Enhanced Tab Content with Animations */}
