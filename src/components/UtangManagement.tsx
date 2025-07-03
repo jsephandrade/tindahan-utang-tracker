@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -113,34 +112,34 @@ const UtangManagement = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button
           variant={filterStatus === 'all' ? 'default' : 'outline'}
           onClick={() => setFilterStatus('all')}
-          className={filterStatus === 'all' ? 'bg-orange-600 hover:bg-orange-700' : ''}
+          className={`flex-shrink-0 min-w-0 px-3 py-2 ${filterStatus === 'all' ? 'bg-orange-600 hover:bg-orange-700' : ''}`}
         >
-          All ({utangRecords.length})
+          <span className="whitespace-nowrap">All ({utangRecords.length})</span>
         </Button>
         <Button
           variant={filterStatus === 'unpaid' ? 'default' : 'outline'}
           onClick={() => setFilterStatus('unpaid')}
-          className={filterStatus === 'unpaid' ? 'bg-red-600 hover:bg-red-700' : ''}
+          className={`flex-shrink-0 min-w-0 px-3 py-2 ${filterStatus === 'unpaid' ? 'bg-red-600 hover:bg-red-700' : ''}`}
         >
-          Unpaid ({utangRecords.filter(r => r.status === 'unpaid').length})
+          <span className="whitespace-nowrap">Unpaid ({utangRecords.filter(r => r.status === 'unpaid').length})</span>
         </Button>
         <Button
           variant={filterStatus === 'partial' ? 'default' : 'outline'}
           onClick={() => setFilterStatus('partial')}
-          className={filterStatus === 'partial' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}
+          className={`flex-shrink-0 min-w-0 px-3 py-2 ${filterStatus === 'partial' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}`}
         >
-          Partial ({utangRecords.filter(r => r.status === 'partial').length})
+          <span className="whitespace-nowrap">Partial ({utangRecords.filter(r => r.status === 'partial').length})</span>
         </Button>
         <Button
           variant={filterStatus === 'paid' ? 'default' : 'outline'}
           onClick={() => setFilterStatus('paid')}
-          className={filterStatus === 'paid' ? 'bg-green-600 hover:bg-green-700' : ''}
+          className={`flex-shrink-0 min-w-0 px-3 py-2 ${filterStatus === 'paid' ? 'bg-green-600 hover:bg-green-700' : ''}`}
         >
-          Paid ({utangRecords.filter(r => r.status === 'paid').length})
+          <span className="whitespace-nowrap">Paid ({utangRecords.filter(r => r.status === 'paid').length})</span>
         </Button>
       </div>
 
