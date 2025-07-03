@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useStore } from "@/contexts/StoreContext";
 import { Product } from "@/types/store";
-import { Package, Plus, Edit, Trash2, AlertTriangle } from "lucide-react";
+import { Package, Plus, Edit, Trash2, AlertTriangle, Barcode, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const InventoryManagement = () => {
@@ -255,74 +254,96 @@ const InventoryManagement = () => {
         />
       </div>
 
-      {/* Products Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-orange-900">
-            <Package className="h-5 w-5" />
-            Products ({filteredProducts.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-3">Product</th>
-                  <th className="text-left p-3">Category</th>
-                  <th className="text-left p-3">Price</th>
-                  <th className="text-left p-3">Stock</th>
-                  <th className="text-left p-3">Min Stock</th>
-                  <th className="text-left p-3">Supplier</th>
-                  <th className="text-left p-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredProducts.map((product) => (
-                  <tr key={product.id} className="border-b hover:bg-orange-50">
-                    <td className="p-3">
-                      <div>
-                        <p className="font-medium">{product.name}</p>
-                        {product.barcode && (
-                          <p className="text-xs text-muted-foreground">{product.barcode}</p>
-                        )}
-                      </div>
-                    </td>
-                    <td className="p-3">{product.category}</td>
-                    <td className="p-3">₱{product.price.toFixed(2)}</td>
-                    <td className="p-3">
-                      <span className={product.stock <= product.minStock ? 'text-red-600 font-bold' : ''}>
+      {/* Products Cards */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Package className="h-5 w-5 text-orange-900" />
+          <h3 className="text-lg font-semibold text-orange-900">Products ({filteredProducts.length})</h3>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredProducts.map((product) => (
+            <Card key={product.id} className="hover:shadow-lg transition-shadow border-orange-100 hover:border-orange-200">
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  {/* Product Header */}
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900 text-lg">{product.name}</h4>
+                      <p className="text-sm text-orange-600 bg-orange-50 px-2 py-1 rounded-full inline-block mt-1">
+                        {product.category}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-xl font-bold text-orange-900">₱{product.price.toFixed(2)}</p>
+                    </div>
+                  </div>
+
+                  {/* Stock Information */}
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-gray-600">Current Stock</span>
+                      <span className={`font-bold ${product.stock <= product.minStock ? 'text-red-600' : 'text-green-600'}`}>
                         {product.stock}
                       </span>
-                    </td>
-                    <td className="p-3">{product.minStock}</td>
-                    <td className="p-3">{product.supplier || '-'}</td>
-                    <td className="p-3">
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditDialog(product)}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteProduct(product)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Min Stock</span>
+                      <span className="text-sm text-gray-700">{product.minStock}</span>
+                    </div>
+                  </div>
+
+                  {/* Additional Info */}
+                  <div className="space-y-2">
+                    {product.barcode && (
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Barcode className="h-4 w-4" />
+                        <span>{product.barcode}</span>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
+                    )}
+                    {product.supplier && (
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <User className="h-4 w-4" />
+                        <span>{product.supplier}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEditDialog(product)}
+                      className="flex-1 hover:bg-orange-50 hover:border-orange-200"
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteProduct(product)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 hover:border-red-200"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {filteredProducts.length === 0 && (
+          <Card className="border-dashed border-2 border-gray-200">
+            <CardContent className="p-8 text-center">
+              <Package className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <p className="text-gray-500">No products found matching your search.</p>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
