@@ -7,11 +7,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { useStore } from "@/contexts/StoreContext";
 import { UtangRecord } from "@/types/store";
-import { CreditCard, DollarSign, Calendar, User, Receipt } from "lucide-react";
+import { CreditCard, DollarSign, Calendar, User, Receipt, ShoppingCart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const UtangManagement = () => {
-  const { utangRecords, customers, addPayment } = useStore();
+  const { utangRecords, customers, transactions, addPayment } = useStore();
   const { toast } = useToast();
   
   const [selectedRecord, setSelectedRecord] = useState<UtangRecord | null>(null);
@@ -92,6 +92,12 @@ const UtangManagement = () => {
     return record.amount - totalPaid;
   };
 
+  // New function to get transaction items for receipt display
+  const getTransactionItems = (transactionId: string) => {
+    const transaction = transactions.find(t => t.id === transactionId);
+    return transaction?.items || [];
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -156,49 +162,82 @@ const UtangManagement = () => {
           filteredRecords.map((record) => {
             const remainingBalance = getRemainingBalance(record);
             const totalPayments = record.payments.reduce((sum, p) => sum + p.amount, 0);
+            const transactionItems = getTransactionItems(record.transactionId);
             
             return (
               <Card key={record.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex-1">
+                <CardContent className="p-4 sm:p-6 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                    <div className="flex-1 space-y-3">
                       <div className="flex items-center gap-3 mb-2">
-                        <User className="h-5 w-5 text-orange-500" />
-                        <h3 className="text-lg font-semibold">{record.customerName}</h3>
+                        <User className="h-5 w-5 text-orange-500 flex-shrink-0" />
+                        <h3 className="text-lg font-semibold truncate">{record.customerName}</h3>
                         <Badge className={getStatusColor(record.status)}>
                           {record.status.toUpperCase()}
                         </Badge>
                       </div>
                       
-                      <p className="text-sm text-muted-foreground mb-2">{record.description}</p>
-                      
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          {record.createdAt.toLocaleDateString()}
+                          <span>{record.createdAt.toLocaleDateString()}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Receipt className="h-4 w-4" />
-                          Transaction ID: {record.transactionId.slice(-6)}
+                          <span>ID: {record.transactionId.slice(-6)}</span>
                         </div>
                       </div>
+
+                      {/* Receipt-style Product List */}
+                      {transactionItems.length > 0 && (
+                        <div className="bg-gray-50 p-3 rounded-lg border">
+                          <div className="flex items-center gap-2 mb-2">
+                            <ShoppingCart className="h-4 w-4 text-orange-500" />
+                            <span className="font-medium text-sm">Items Purchased</span>
+                          </div>
+                          <div className="space-y-1 font-mono text-sm">
+                            <div className="border-b border-dashed border-gray-300 pb-1 mb-2">
+                              <div className="flex justify-between text-xs text-muted-foreground">
+                                <span>ITEM</span>
+                                <span>QTY × PRICE = TOTAL</span>
+                              </div>
+                            </div>
+                            {transactionItems.map((item, index) => (
+                              <div key={index} className="flex justify-between items-start">
+                                <div className="flex-1 pr-2">
+                                  <span className="text-xs">{item.productName}</span>
+                                </div>
+                                <div className="text-right text-xs whitespace-nowrap">
+                                  {item.quantity} × ₱{item.price.toFixed(2)} = ₱{item.total.toFixed(2)}
+                                </div>
+                              </div>
+                            ))}
+                            <div className="border-t border-dashed border-gray-300 pt-1 mt-2">
+                              <div className="flex justify-between font-bold text-sm">
+                                <span>TOTAL</span>
+                                <span>₱{record.amount.toFixed(2)}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                     
-                    <div className="text-right">
-                      <div className="mb-2">
+                    <div className="text-right space-y-2 flex-shrink-0">
+                      <div>
                         <p className="text-sm text-muted-foreground">Total Amount</p>
                         <p className="text-xl font-bold">₱{record.amount.toFixed(2)}</p>
                       </div>
                       
                       {totalPayments > 0 && (
-                        <div className="mb-2">
+                        <div>
                           <p className="text-sm text-muted-foreground">Paid</p>
                           <p className="text-lg font-semibold text-green-600">₱{totalPayments.toFixed(2)}</p>
                         </div>
                       )}
                       
                       {remainingBalance > 0 && (
-                        <div className="mb-3">
+                        <div>
                           <p className="text-sm text-muted-foreground">Balance</p>
                           <p className="text-lg font-semibold text-red-600">₱{remainingBalance.toFixed(2)}</p>
                         </div>
@@ -207,7 +246,7 @@ const UtangManagement = () => {
                       {record.status !== 'paid' && (
                         <Button
                           onClick={() => openPaymentDialog(record)}
-                          className="bg-orange-600 hover:bg-orange-700"
+                          className="bg-orange-600 hover:bg-orange-700 w-full sm:w-auto"
                           size="sm"
                         >
                           <DollarSign className="h-4 w-4 mr-1" />
@@ -219,8 +258,11 @@ const UtangManagement = () => {
                   
                   {/* Payment History */}
                   {record.payments.length > 0 && (
-                    <div className="border-t pt-4">
-                      <h4 className="font-semibold mb-2 text-sm">Payment History</h4>
+                    <div className="border-t pt-4 space-y-2">
+                      <h4 className="font-semibold text-sm flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        Payment History
+                      </h4>
                       <div className="space-y-2">
                         {record.payments.map((payment) => (
                           <div key={payment.id} className="flex justify-between items-center text-sm bg-green-50 p-2 rounded">
@@ -230,7 +272,7 @@ const UtangManagement = () => {
                                 <span className="text-muted-foreground ml-2">- {payment.note}</span>
                               )}
                             </div>
-                            <span className="text-muted-foreground">
+                            <span className="text-muted-foreground text-xs">
                               {payment.date.toLocaleDateString()}
                             </span>
                           </div>

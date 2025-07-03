@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, Customer, Transaction, UtangRecord, DashboardStats } from '@/types/store';
 
@@ -86,11 +85,104 @@ const sampleCustomers: Customer[] = [
   },
 ];
 
+// Add sample transactions with utang
+const sampleTransactions: Transaction[] = [
+  {
+    id: '1',
+    customerId: '1',
+    customerName: 'Maria Santos',
+    items: [
+      {
+        productId: '1',
+        productName: 'Lucky Me Instant Noodles',
+        quantity: 2,
+        price: 15,
+        total: 30,
+      },
+      {
+        productId: '2',
+        productName: 'Coca-Cola 250ml',
+        quantity: 3,
+        price: 20,
+        total: 60,
+      },
+    ],
+    totalAmount: 90,
+    amountPaid: 0,
+    change: 0,
+    utangAmount: 90,
+    paymentMethod: 'utang',
+    createdAt: new Date(),
+    status: 'completed',
+  },
+  {
+    id: '2',
+    customerId: '2',
+    customerName: 'Juan Dela Cruz',
+    items: [
+      {
+        productId: '3',
+        productName: 'Skyflakes Crackers',
+        quantity: 1,
+        price: 25,
+        total: 25,
+      },
+      {
+        productId: '1',
+        productName: 'Lucky Me Instant Noodles',
+        quantity: 1,
+        price: 15,
+        total: 15,
+      },
+    ],
+    totalAmount: 40,
+    amountPaid: 0,
+    change: 0,
+    utangAmount: 40,
+    paymentMethod: 'utang',
+    createdAt: new Date(),
+    status: 'completed',
+  },
+];
+
+// Add sample utang records
+const sampleUtangRecords: UtangRecord[] = [
+  {
+    id: '1',
+    customerId: '1',
+    customerName: 'Maria Santos',
+    transactionId: '1',
+    amount: 90,
+    description: 'Purchase - Lucky Me Instant Noodles, Coca-Cola 250ml',
+    status: 'unpaid',
+    payments: [],
+    createdAt: new Date(),
+  },
+  {
+    id: '2',
+    customerId: '2',
+    customerName: 'Juan Dela Cruz',
+    transactionId: '2',
+    amount: 40,
+    description: 'Purchase - Skyflakes Crackers, Lucky Me Instant Noodles',
+    status: 'partial',
+    payments: [
+      {
+        id: '1',
+        amount: 15,
+        date: new Date(),
+        note: 'Partial payment',
+      },
+    ],
+    createdAt: new Date(),
+  },
+];
+
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>(sampleProducts);
   const [customers, setCustomers] = useState<Customer[]>(sampleCustomers);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [utangRecords, setUtangRecords] = useState<UtangRecord[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>(sampleTransactions);
+  const [utangRecords, setUtangRecords] = useState<UtangRecord[]>(sampleUtangRecords);
 
   const addProduct = (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => {
     const newProduct: Product = {
