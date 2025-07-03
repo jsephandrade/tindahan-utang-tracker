@@ -56,21 +56,7 @@ const Index = () => {
         <div className="mb-6 relative">
           <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 to-red-600 rounded-2xl blur opacity-20"></div>
           <Card className="relative bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-orange-800 to-red-800 bg-clip-text text-transparent mb-2">
-                    🏪 Tindahan Manager
-                  </h1>
-                  <p className="text-xs sm:text-sm text-orange-700/80">
-                    Your complete sari-sari store solution
-                  </p>
-                </div>
-                
-                {/* Mobile Menu Toggle */}
-                
-              </div>
-            </CardContent>
+            
           </Card>
         </div>
 
