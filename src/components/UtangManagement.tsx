@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,7 +39,7 @@ const UtangManagement = () => {
     if (paymentAmount > remainingBalance) {
       toast({
         title: "Overpayment",
-        description: `Payment amount exceeds remaining balance of ₱${remainingBalance.toFixed(2)}.`,
+        description: `Payment amount exceeds remaining balance of P${remainingBalance.toFixed(2)}.`,
         variant: "destructive",
       });
       return;
@@ -53,7 +54,7 @@ const UtangManagement = () => {
     
     toast({
       title: "Payment Recorded",
-      description: `Payment of ₱${paymentAmount.toFixed(2)} has been recorded.`,
+      description: `Payment of P${paymentAmount.toFixed(2)} has been recorded.`,
     });
   };
 
@@ -111,7 +112,7 @@ const UtangManagement = () => {
           <CardContent className="p-4">
             <div className="text-center">
               <p className="text-sm text-muted-foreground">Total Unpaid Utang</p>
-              <p className="text-2xl font-bold text-red-600">₱{totalUnpaidUtang.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-red-600">P{totalUnpaidUtang.toFixed(2)}</p>
             </div>
           </CardContent>
         </Card>
@@ -208,14 +209,14 @@ const UtangManagement = () => {
                                   <span className="text-xs">{item.productName}</span>
                                 </div>
                                 <div className="text-right text-xs whitespace-nowrap">
-                                  {item.quantity} × ₱{item.price.toFixed(2)} = ₱{item.total.toFixed(2)}
+                                  {item.quantity} × P{item.price.toFixed(2)} = P{item.total.toFixed(2)}
                                 </div>
                               </div>
                             ))}
                             <div className="border-t border-dashed border-gray-300 pt-1 mt-2">
                               <div className="flex justify-between font-bold text-sm">
                                 <span>TOTAL</span>
-                                <span>₱{record.amount.toFixed(2)}</span>
+                                <span>P{record.amount.toFixed(2)}</span>
                               </div>
                             </div>
                           </div>
@@ -226,20 +227,20 @@ const UtangManagement = () => {
                     <div className="text-right space-y-2 flex-shrink-0">
                       <div>
                         <p className="text-sm text-muted-foreground">Total Amount</p>
-                        <p className="text-xl font-bold">₱{record.amount.toFixed(2)}</p>
+                        <p className="text-xl font-bold">P{record.amount.toFixed(2)}</p>
                       </div>
                       
                       {totalPayments > 0 && (
                         <div>
                           <p className="text-sm text-muted-foreground">Paid</p>
-                          <p className="text-lg font-semibold text-green-600">₱{totalPayments.toFixed(2)}</p>
+                          <p className="text-lg font-semibold text-green-600">P{totalPayments.toFixed(2)}</p>
                         </div>
                       )}
                       
                       {remainingBalance > 0 && (
                         <div>
                           <p className="text-sm text-muted-foreground">Balance</p>
-                          <p className="text-lg font-semibold text-red-600">₱{remainingBalance.toFixed(2)}</p>
+                          <p className="text-lg font-semibold text-red-600">P{remainingBalance.toFixed(2)}</p>
                         </div>
                       )}
                       
@@ -267,7 +268,7 @@ const UtangManagement = () => {
                         {record.payments.map((payment) => (
                           <div key={payment.id} className="flex justify-between items-center text-sm bg-green-50 p-2 rounded">
                             <div>
-                              <span className="font-medium">₱{payment.amount.toFixed(2)}</span>
+                              <span className="font-medium">P{payment.amount.toFixed(2)}</span>
                               {payment.note && (
                                 <span className="text-muted-foreground ml-2">- {payment.note}</span>
                               )}
@@ -300,7 +301,7 @@ const UtangManagement = () => {
                 <p className="text-sm text-muted-foreground">{selectedRecord.description}</p>
                 <div className="mt-2">
                   <span className="text-sm text-muted-foreground">Remaining Balance: </span>
-                  <span className="font-bold text-red-600">₱{getRemainingBalance(selectedRecord).toFixed(2)}</span>
+                  <span className="font-bold text-red-600">P{getRemainingBalance(selectedRecord).toFixed(2)}</span>
                 </div>
               </div>
               
