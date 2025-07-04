@@ -114,13 +114,8 @@ const InventoryManagement = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-orange-900">Inventory Management</h2>
-          <p className="text-orange-700">Manage your product inventory and stock levels</p>
-        </div>
-        
+      {/* Header with Add Button */}
+      <div className="flex justify-end">
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-orange-600 hover:bg-orange-700">

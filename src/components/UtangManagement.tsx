@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -171,13 +170,8 @@ const UtangManagement = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-orange-900">Utang Management</h2>
-          <p className="text-orange-700">Track and manage customer debt records</p>
-        </div>
-        
+      {/* Header with Total Unpaid */}
+      <div className="flex justify-end">
         <Card className="w-64">
           <CardContent className="p-4">
             <div className="text-center">
