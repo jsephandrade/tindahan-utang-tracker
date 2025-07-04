@@ -11,18 +11,71 @@ import { UtangRecord } from "@/types/store";
 import { CreditCard, DollarSign, Calendar, User, Receipt, ShoppingCart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+interface ConsolidatedUtangRecord {
+  customerId: string;
+  customerName: string;
+  records: UtangRecord[];
+  totalAmount: number;
+  totalPaid: number;
+  remainingBalance: number;
+  status: 'unpaid' | 'partial' | 'paid';
+  latestDate: Date;
+}
+
 const UtangManagement = () => {
   const { utangRecords, customers, transactions, addPayment } = useStore();
   const { toast } = useToast();
   
-  const [selectedRecord, setSelectedRecord] = useState<UtangRecord | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<ConsolidatedUtangRecord | null>(null);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
   const [paymentNote, setPaymentNote] = useState("");
   const [filterStatus, setFilterStatus] = useState<'all' | 'unpaid' | 'partial' | 'paid'>('all');
 
+  // Group utang records by customer
+  const consolidatedRecords: ConsolidatedUtangRecord[] = utangRecords.reduce((acc, record) => {
+    const existingCustomer = acc.find(c => c.customerId === record.customerId);
+    
+    if (existingCustomer) {
+      existingCustomer.records.push(record);
+      existingCustomer.totalAmount += record.amount;
+      const recordPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
+      existingCustomer.totalPaid += recordPaid;
+      if (record.createdAt > existingCustomer.latestDate) {
+        existingCustomer.latestDate = record.createdAt;
+      }
+    } else {
+      const recordPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
+      acc.push({
+        customerId: record.customerId,
+        customerName: record.customerName,
+        records: [record],
+        totalAmount: record.amount,
+        totalPaid: recordPaid,
+        remainingBalance: 0, // Will be calculated below
+        status: 'unpaid', // Will be calculated below
+        latestDate: record.createdAt,
+      });
+    }
+    
+    return acc;
+  }, [] as ConsolidatedUtangRecord[]);
+
+  // Calculate remaining balance and status for each consolidated record
+  consolidatedRecords.forEach(consolidated => {
+    consolidated.remainingBalance = consolidated.totalAmount - consolidated.totalPaid;
+    
+    if (consolidated.remainingBalance <= 0) {
+      consolidated.status = 'paid';
+    } else if (consolidated.totalPaid > 0) {
+      consolidated.status = 'partial';
+    } else {
+      consolidated.status = 'unpaid';
+    }
+  });
+
   const handleAddPayment = () => {
-    if (!selectedRecord) return;
+    if (!selectedCustomer) return;
     
     if (paymentAmount <= 0) {
       toast({
@@ -33,24 +86,35 @@ const UtangManagement = () => {
       return;
     }
 
-    const totalPaid = selectedRecord.payments.reduce((sum, p) => sum + p.amount, 0);
-    const remainingBalance = selectedRecord.amount - totalPaid;
-    
-    if (paymentAmount > remainingBalance) {
+    if (paymentAmount > selectedCustomer.remainingBalance) {
       toast({
         title: "Overpayment",
-        description: `Payment amount exceeds remaining balance of P${remainingBalance.toFixed(2)}.`,
+        description: `Payment amount exceeds remaining balance of P${selectedCustomer.remainingBalance.toFixed(2)}.`,
         variant: "destructive",
       });
       return;
     }
 
-    addPayment(selectedRecord.id, paymentAmount, paymentNote);
+    // Apply payment to the oldest unpaid record first
+    let remainingPayment = paymentAmount;
+    
+    for (const record of selectedCustomer.records) {
+      if (remainingPayment <= 0) break;
+      
+      const recordPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
+      const recordBalance = record.amount - recordPaid;
+      
+      if (recordBalance > 0) {
+        const paymentForThisRecord = Math.min(remainingPayment, recordBalance);
+        addPayment(record.id, paymentForThisRecord, paymentNote);
+        remainingPayment -= paymentForThisRecord;
+      }
+    }
     
     setPaymentAmount(0);
     setPaymentNote("");
     setIsPaymentDialogOpen(false);
-    setSelectedRecord(null);
+    setSelectedCustomer(null);
     
     toast({
       title: "Payment Recorded",
@@ -58,22 +122,19 @@ const UtangManagement = () => {
     });
   };
 
-  const openPaymentDialog = (record: UtangRecord) => {
-    setSelectedRecord(record);
+  const openPaymentDialog = (consolidated: ConsolidatedUtangRecord) => {
+    setSelectedCustomer(consolidated);
     setIsPaymentDialogOpen(true);
   };
 
-  const filteredRecords = utangRecords.filter(record => {
+  const filteredRecords = consolidatedRecords.filter(consolidated => {
     if (filterStatus === 'all') return true;
-    return record.status === filterStatus;
+    return consolidated.status === filterStatus;
   });
 
-  const totalUnpaidUtang = utangRecords
+  const totalUnpaidUtang = consolidatedRecords
     .filter(r => r.status !== 'paid')
-    .reduce((sum, r) => {
-      const totalPaid = r.payments.reduce((pSum, p) => pSum + p.amount, 0);
-      return sum + (r.amount - totalPaid);
-    }, 0);
+    .reduce((sum, r) => sum + r.remainingBalance, 0);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -88,15 +149,24 @@ const UtangManagement = () => {
     }
   };
 
-  const getRemainingBalance = (record: UtangRecord) => {
-    const totalPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
-    return record.amount - totalPaid;
-  };
-
-  // New function to get transaction items for receipt display
-  const getTransactionItems = (transactionId: string) => {
-    const transaction = transactions.find(t => t.id === transactionId);
-    return transaction?.items || [];
+  // Get all transaction items for a consolidated record
+  const getAllTransactionItems = (consolidated: ConsolidatedUtangRecord) => {
+    const allItems: any[] = [];
+    
+    consolidated.records.forEach(record => {
+      const transaction = transactions.find(t => t.id === record.transactionId);
+      if (transaction?.items) {
+        transaction.items.forEach(item => {
+          allItems.push({
+            ...item,
+            transactionId: record.transactionId,
+            date: record.createdAt
+          });
+        });
+      }
+    });
+    
+    return allItems;
   };
 
   return (
@@ -125,32 +195,32 @@ const UtangManagement = () => {
           onClick={() => setFilterStatus('all')}
           className={`flex-shrink-0 min-w-0 px-3 py-2 ${filterStatus === 'all' ? 'bg-orange-600 hover:bg-orange-700' : ''}`}
         >
-          <span className="whitespace-nowrap">All ({utangRecords.length})</span>
+          <span className="whitespace-nowrap">All ({consolidatedRecords.length})</span>
         </Button>
         <Button
           variant={filterStatus === 'unpaid' ? 'default' : 'outline'}
           onClick={() => setFilterStatus('unpaid')}
           className={`flex-shrink-0 min-w-0 px-3 py-2 ${filterStatus === 'unpaid' ? 'bg-red-600 hover:bg-red-700' : ''}`}
         >
-          <span className="whitespace-nowrap">Unpaid ({utangRecords.filter(r => r.status === 'unpaid').length})</span>
+          <span className="whitespace-nowrap">Unpaid ({consolidatedRecords.filter(r => r.status === 'unpaid').length})</span>
         </Button>
         <Button
           variant={filterStatus === 'partial' ? 'default' : 'outline'}
           onClick={() => setFilterStatus('partial')}
           className={`flex-shrink-0 min-w-0 px-3 py-2 ${filterStatus === 'partial' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}`}
         >
-          <span className="whitespace-nowrap">Partial ({utangRecords.filter(r => r.status === 'partial').length})</span>
+          <span className="whitespace-nowrap">Partial ({consolidatedRecords.filter(r => r.status === 'partial').length})</span>
         </Button>
         <Button
           variant={filterStatus === 'paid' ? 'default' : 'outline'}
           onClick={() => setFilterStatus('paid')}
           className={`flex-shrink-0 min-w-0 px-3 py-2 ${filterStatus === 'paid' ? 'bg-green-600 hover:bg-green-700' : ''}`}
         >
-          <span className="whitespace-nowrap">Paid ({utangRecords.filter(r => r.status === 'paid').length})</span>
+          <span className="whitespace-nowrap">Paid ({consolidatedRecords.filter(r => r.status === 'paid').length})</span>
         </Button>
       </div>
 
-      {/* Utang Records */}
+      {/* Consolidated Utang Records */}
       <div className="grid gap-4">
         {filteredRecords.length === 0 ? (
           <Card>
@@ -160,41 +230,39 @@ const UtangManagement = () => {
             </CardContent>
           </Card>
         ) : (
-          filteredRecords.map((record) => {
-            const remainingBalance = getRemainingBalance(record);
-            const totalPayments = record.payments.reduce((sum, p) => sum + p.amount, 0);
-            const transactionItems = getTransactionItems(record.transactionId);
+          filteredRecords.map((consolidated) => {
+            const allItems = getAllTransactionItems(consolidated);
+            const allPayments = consolidated.records.flatMap(r => r.payments);
             
             return (
-              <Card key={record.id} className="hover:shadow-md transition-shadow">
+              <Card key={consolidated.customerId} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-4 sm:p-6 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                     <div className="flex-1 space-y-3">
                       <div className="flex items-center gap-3 mb-2">
                         <User className="h-5 w-5 text-orange-500 flex-shrink-0" />
-                        <h3 className="text-lg font-semibold truncate">{record.customerName}</h3>
-                        <Badge className={getStatusColor(record.status)}>
-                          {record.status.toUpperCase()}
+                        <h3 className="text-lg font-semibold truncate">{consolidated.customerName}</h3>
+                        <Badge className={getStatusColor(consolidated.status)}>
+                          {consolidated.status.toUpperCase()}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {consolidated.records.length} transaction{consolidated.records.length > 1 ? 's' : ''}
                         </Badge>
                       </div>
                       
                       <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          <span>{record.createdAt.toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Receipt className="h-4 w-4" />
-                          <span>ID: {record.transactionId.slice(-6)}</span>
+                          <span>Latest: {consolidated.latestDate.toLocaleDateString()}</span>
                         </div>
                       </div>
 
-                      {/* Receipt-style Product List */}
-                      {transactionItems.length > 0 && (
+                      {/* Consolidated Receipt-style Product List */}
+                      {allItems.length > 0 && (
                         <div className="bg-gray-50 p-3 rounded-lg border">
                           <div className="flex items-center gap-2 mb-2">
                             <ShoppingCart className="h-4 w-4 text-orange-500" />
-                            <span className="font-medium text-sm">Items Purchased</span>
+                            <span className="font-medium text-sm">All Items Purchased</span>
                           </div>
                           <div className="space-y-1 font-mono text-sm">
                             <div className="border-b border-dashed border-gray-300 pb-1 mb-2">
@@ -203,10 +271,13 @@ const UtangManagement = () => {
                                 <span>QTY × PRICE = TOTAL</span>
                               </div>
                             </div>
-                            {transactionItems.map((item, index) => (
-                              <div key={index} className="flex justify-between items-start">
+                            {allItems.map((item, index) => (
+                              <div key={`${item.transactionId}-${index}`} className="flex justify-between items-start">
                                 <div className="flex-1 pr-2">
                                   <span className="text-xs">{item.productName}</span>
+                                  <div className="text-xs text-muted-foreground">
+                                    {item.date.toLocaleDateString()}
+                                  </div>
                                 </div>
                                 <div className="text-right text-xs whitespace-nowrap">
                                   {item.quantity} × P{item.price.toFixed(2)} = P{item.total.toFixed(2)}
@@ -216,7 +287,7 @@ const UtangManagement = () => {
                             <div className="border-t border-dashed border-gray-300 pt-1 mt-2">
                               <div className="flex justify-between font-bold text-sm">
                                 <span>TOTAL</span>
-                                <span>P{record.amount.toFixed(2)}</span>
+                                <span>P{consolidated.totalAmount.toFixed(2)}</span>
                               </div>
                             </div>
                           </div>
@@ -227,26 +298,26 @@ const UtangManagement = () => {
                     <div className="text-right space-y-2 flex-shrink-0">
                       <div>
                         <p className="text-sm text-muted-foreground">Total Amount</p>
-                        <p className="text-xl font-bold">P{record.amount.toFixed(2)}</p>
+                        <p className="text-xl font-bold">P{consolidated.totalAmount.toFixed(2)}</p>
                       </div>
                       
-                      {totalPayments > 0 && (
+                      {consolidated.totalPaid > 0 && (
                         <div>
                           <p className="text-sm text-muted-foreground">Paid</p>
-                          <p className="text-lg font-semibold text-green-600">P{totalPayments.toFixed(2)}</p>
+                          <p className="text-lg font-semibold text-green-600">P{consolidated.totalPaid.toFixed(2)}</p>
                         </div>
                       )}
                       
-                      {remainingBalance > 0 && (
+                      {consolidated.remainingBalance > 0 && (
                         <div>
                           <p className="text-sm text-muted-foreground">Balance</p>
-                          <p className="text-lg font-semibold text-red-600">P{remainingBalance.toFixed(2)}</p>
+                          <p className="text-lg font-semibold text-red-600">P{consolidated.remainingBalance.toFixed(2)}</p>
                         </div>
                       )}
                       
-                      {record.status !== 'paid' && (
+                      {consolidated.status !== 'paid' && (
                         <Button
-                          onClick={() => openPaymentDialog(record)}
+                          onClick={() => openPaymentDialog(consolidated)}
                           className="bg-orange-600 hover:bg-orange-700 w-full sm:w-auto"
                           size="sm"
                         >
@@ -258,14 +329,16 @@ const UtangManagement = () => {
                   </div>
                   
                   {/* Payment History */}
-                  {record.payments.length > 0 && (
+                  {allPayments.length > 0 && (
                     <div className="border-t pt-4 space-y-2">
                       <h4 className="font-semibold text-sm flex items-center gap-2">
                         <DollarSign className="h-4 w-4" />
                         Payment History
                       </h4>
                       <div className="space-y-2">
-                        {record.payments.map((payment) => (
+                        {allPayments
+                          .sort((a, b) => b.date.getTime() - a.date.getTime())
+                          .map((payment) => (
                           <div key={payment.id} className="flex justify-between items-center text-sm bg-green-50 p-2 rounded">
                             <div>
                               <span className="font-medium">P{payment.amount.toFixed(2)}</span>
@@ -294,14 +367,16 @@ const UtangManagement = () => {
           <DialogHeader>
             <DialogTitle>Add Payment</DialogTitle>
           </DialogHeader>
-          {selectedRecord && (
+          {selectedCustomer && (
             <div className="space-y-4">
               <div className="bg-orange-50 p-4 rounded-lg">
-                <h3 className="font-semibold">{selectedRecord.customerName}</h3>
-                <p className="text-sm text-muted-foreground">{selectedRecord.description}</p>
+                <h3 className="font-semibold">{selectedCustomer.customerName}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {selectedCustomer.records.length} transaction{selectedCustomer.records.length > 1 ? 's' : ''}
+                </p>
                 <div className="mt-2">
                   <span className="text-sm text-muted-foreground">Remaining Balance: </span>
-                  <span className="font-bold text-red-600">P{getRemainingBalance(selectedRecord).toFixed(2)}</span>
+                  <span className="font-bold text-red-600">P{selectedCustomer.remainingBalance.toFixed(2)}</span>
                 </div>
               </div>
               
@@ -313,7 +388,7 @@ const UtangManagement = () => {
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(Number(e.target.value))}
                   placeholder="0.00"
-                  max={getRemainingBalance(selectedRecord)}
+                  max={selectedCustomer.remainingBalance}
                 />
               </div>
               
