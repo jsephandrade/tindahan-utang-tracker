@@ -95,12 +95,10 @@ const CustomerManagement = () => {
   return <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-0">
           <div className="space-y-1">
-            <h2 className="font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent text-2xl">
-              Customer Management
-            </h2>
-            <p className="text-orange-700/80 text-sm">Manage customer information and track their purchase history</p>
+            
+            
           </div>
           
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
