@@ -8,6 +8,7 @@ import { useStore } from "@/contexts/StoreContext";
 import { Customer } from "@/types/store";
 import { Users, Plus, Edit, Phone, CreditCard, Calendar, TrendingUp, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
 const CustomerManagement = () => {
   const {
     customers,
@@ -108,7 +109,7 @@ const CustomerManagement = () => {
                 Add Customer
               </Button>
             </DialogTrigger>
-            <DialogContent className="mx-4">
+            <DialogContent className="w-[95vw] max-w-md mx-auto">
               <DialogHeader>
                 <DialogTitle className="text-orange-900">Add New Customer</DialogTitle>
               </DialogHeader>
@@ -322,7 +323,7 @@ RECORDS</p>
 
         {/* Edit Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="mx-4">
+          <DialogContent className="w-[95vw] max-w-md mx-auto">
             <DialogHeader>
               <DialogTitle className="text-orange-900">Edit Customer</DialogTitle>
             </DialogHeader>
@@ -357,4 +358,5 @@ RECORDS</p>
       </div>
     </div>;
 };
+
 export default CustomerManagement;
