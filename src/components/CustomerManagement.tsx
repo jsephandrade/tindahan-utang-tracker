@@ -97,7 +97,7 @@ const CustomerManagement = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div className="space-y-1">
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+            <h2 className="font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent text-2xl">
               Customer Management
             </h2>
             <p className="text-orange-700/80 text-sm">Manage customer information and track their purchase history</p>
