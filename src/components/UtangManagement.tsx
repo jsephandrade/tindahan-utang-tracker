@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -169,10 +170,10 @@ const UtangManagement = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       {/* Header with Total Unpaid */}
-      <div className="flex justify-end">
-        <Card className="w-64">
+      <div className="flex justify-center sm:justify-end">
+        <Card className="w-full max-w-sm">
           <CardContent className="p-4">
             <div className="text-center">
               <p className="text-sm text-muted-foreground">Total Unpaid Utang</p>
@@ -183,7 +184,7 @@ const UtangManagement = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap justify-center sm:justify-start gap-2">
         <Button
           variant={filterStatus === 'all' ? 'default' : 'outline'}
           onClick={() => setFilterStatus('all')}
@@ -215,9 +216,9 @@ const UtangManagement = () => {
       </div>
 
       {/* Consolidated Utang Records */}
-      <div className="grid gap-4">
+      <div className="w-full space-y-4">
         {filteredRecords.length === 0 ? (
-          <Card>
+          <Card className="w-full max-w-2xl mx-auto">
             <CardContent className="p-8 text-center">
               <CreditCard className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground">No utang records found for the selected filter.</p>
@@ -229,13 +230,13 @@ const UtangManagement = () => {
             const allPayments = consolidated.records.flatMap(r => r.payments);
             
             return (
-              <Card key={consolidated.customerId} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4 sm:p-6 space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-                    <div className="flex-1 space-y-3">
-                      <div className="flex items-center gap-3 mb-2">
+              <Card key={consolidated.customerId} className="w-full max-w-4xl mx-auto hover:shadow-md transition-shadow">
+                <CardContent className="w-full p-4 sm:p-6 space-y-4">
+                  <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4 w-full">
+                    <div className="flex-1 space-y-3 min-w-0">
+                      <div className="flex flex-wrap items-center gap-3 mb-2">
                         <User className="h-5 w-5 text-orange-500 flex-shrink-0" />
-                        <h3 className="text-lg font-semibold truncate">{consolidated.customerName}</h3>
+                        <h3 className="text-lg font-semibold truncate flex-1 min-w-0">{consolidated.customerName}</h3>
                         <Badge className={getStatusColor(consolidated.status)}>
                           {consolidated.status.toUpperCase()}
                         </Badge>
@@ -253,12 +254,12 @@ const UtangManagement = () => {
 
                       {/* Consolidated Receipt-style Product List */}
                       {allItems.length > 0 && (
-                        <div className="bg-gray-50 p-3 rounded-lg border">
+                        <div className="bg-gray-50 p-3 rounded-lg border w-full">
                           <div className="flex items-center gap-2 mb-2">
                             <ShoppingCart className="h-4 w-4 text-orange-500" />
                             <span className="font-medium text-sm">All Items Purchased</span>
                           </div>
-                          <div className="space-y-1 font-mono text-sm">
+                          <div className="space-y-1 font-mono text-sm w-full overflow-x-auto">
                             <div className="border-b border-dashed border-gray-300 pb-1 mb-2">
                               <div className="flex justify-between text-xs text-muted-foreground">
                                 <span>ITEM</span>
@@ -266,14 +267,14 @@ const UtangManagement = () => {
                               </div>
                             </div>
                             {allItems.map((item, index) => (
-                              <div key={`${item.transactionId}-${index}`} className="flex justify-between items-start">
-                                <div className="flex-1 pr-2">
-                                  <span className="text-xs">{item.productName}</span>
+                              <div key={`${item.transactionId}-${index}`} className="flex justify-between items-start gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <span className="text-xs truncate block">{item.productName}</span>
                                   <div className="text-xs text-muted-foreground">
                                     {item.date.toLocaleDateString()}
                                   </div>
                                 </div>
-                                <div className="text-right text-xs whitespace-nowrap">
+                                <div className="text-right text-xs whitespace-nowrap flex-shrink-0">
                                   {item.quantity} × P{item.price.toFixed(2)} = P{item.total.toFixed(2)}
                                 </div>
                               </div>
@@ -289,7 +290,7 @@ const UtangManagement = () => {
                       )}
                     </div>
                     
-                    <div className="text-right space-y-2 flex-shrink-0">
+                    <div className="lg:text-right space-y-2 flex-shrink-0 w-full lg:w-auto lg:max-w-xs">
                       <div>
                         <p className="text-sm text-muted-foreground">Total Amount</p>
                         <p className="text-xl font-bold">P{consolidated.totalAmount.toFixed(2)}</p>
@@ -312,7 +313,7 @@ const UtangManagement = () => {
                       {consolidated.status !== 'paid' && (
                         <Button
                           onClick={() => openPaymentDialog(consolidated)}
-                          className="bg-orange-600 hover:bg-orange-700 w-full sm:w-auto"
+                          className="bg-orange-600 hover:bg-orange-700 w-full"
                           size="sm"
                         >
                           <DollarSign className="h-4 w-4 mr-1" />
@@ -324,7 +325,7 @@ const UtangManagement = () => {
                   
                   {/* Payment History */}
                   {allPayments.length > 0 && (
-                    <div className="border-t pt-4 space-y-2">
+                    <div className="border-t pt-4 space-y-2 w-full">
                       <h4 className="font-semibold text-sm flex items-center gap-2">
                         <DollarSign className="h-4 w-4" />
                         Payment History
@@ -334,13 +335,13 @@ const UtangManagement = () => {
                           .sort((a, b) => b.date.getTime() - a.date.getTime())
                           .map((payment) => (
                           <div key={payment.id} className="flex justify-between items-center text-sm bg-green-50 p-2 rounded">
-                            <div>
+                            <div className="flex-1 min-w-0">
                               <span className="font-medium">P{payment.amount.toFixed(2)}</span>
                               {payment.note && (
-                                <span className="text-muted-foreground ml-2">- {payment.note}</span>
+                                <span className="text-muted-foreground ml-2 truncate">- {payment.note}</span>
                               )}
                             </div>
-                            <span className="text-muted-foreground text-xs">
+                            <span className="text-muted-foreground text-xs flex-shrink-0">
                               {payment.date.toLocaleDateString()}
                             </span>
                           </div>
@@ -357,7 +358,7 @@ const UtangManagement = () => {
 
       {/* Payment Dialog */}
       <Dialog open={isPaymentDialogOpen} onOpenChange={setIsPaymentDialogOpen}>
-        <DialogContent>
+        <DialogContent className="w-[95vw] max-w-md mx-auto">
           <DialogHeader>
             <DialogTitle>Add Payment</DialogTitle>
           </DialogHeader>
