@@ -267,7 +267,7 @@ const CustomerManagement = () => {
                         </div>
                         
                         <div className="text-center">
-                          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3">
+                          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 py-[10px]">
                             <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1">UTANG
 RECORDS</p>
                             <p className="text-lg font-bold text-blue-600">
