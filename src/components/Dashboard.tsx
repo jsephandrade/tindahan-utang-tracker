@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useStore } from "@/contexts/StoreContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { 
   TrendingUp, 
   CreditCard, 
@@ -14,6 +15,7 @@ import {
 
 const Dashboard = () => {
   const { getDashboardStats, products, utangRecords } = useStore();
+  const { t } = useLanguage();
   const stats = getDashboardStats();
 
   const lowStockProducts = products.filter(p => p.stock <= p.minStock);
@@ -24,9 +26,9 @@ const Dashboard = () => {
 
   const statCards = [
     {
-      title: "Today's Sales",
+      title: t('dashboard.todaysSales'),
       value: `₱${stats.dailySales.toFixed(2)}`,
-      subtitle: `Total: ₱${stats.totalSales.toFixed(2)}`,
+      subtitle: `${t('dashboard.totalSales')}: ₱${stats.totalSales.toFixed(2)}`,
       icon: TrendingUp,
       gradient: "from-green-500 to-emerald-600",
       bgGradient: "from-green-50 to-emerald-50",
@@ -35,9 +37,9 @@ const Dashboard = () => {
       trendUp: true
     },
     {
-      title: "Total Utang",
+      title: t('dashboard.totalUtang'),
       value: `₱${stats.totalUtang.toFixed(2)}`,
-      subtitle: `Monthly: ₱${stats.monthlyUtang.toFixed(2)}`,
+      subtitle: `${t('dashboard.monthlyUtang')}: ₱${stats.monthlyUtang.toFixed(2)}`,
       icon: CreditCard,
       gradient: "from-red-500 to-rose-600",
       bgGradient: "from-red-50 to-rose-50",
@@ -46,9 +48,9 @@ const Dashboard = () => {
       trendUp: false
     },
     {
-      title: "Low Stock Items",
+      title: t('dashboard.lowStockItems'),
       value: stats.lowStockItems.toString(),
-      subtitle: "Need restocking",
+      subtitle: t('dashboard.needRestocking'),
       icon: AlertTriangle,
       gradient: "from-orange-500 to-amber-600",
       bgGradient: "from-orange-50 to-amber-50",
@@ -57,12 +59,12 @@ const Dashboard = () => {
       trendUp: false
     },
     {
-      title: "Customers",
+      title: t('dashboard.customers'),
       value: stats.totalCustomers.toString(),
-      subtitle: "Registered customers",
+      subtitle: t('dashboard.registeredCustomers'),
       icon: Users,
       gradient: "from-blue-500 to-indigo-600",
-      bgGradient: "from-blue-50 to-indigo-50",
+      bgGradient: "from-blue-50 to-indigo-50", 
       iconBg: "bg-blue-100",
       trend: "+8",
       trendUp: true

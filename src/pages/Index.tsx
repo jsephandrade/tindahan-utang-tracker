@@ -3,41 +3,44 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingCart, Package, Users, CreditCard, TrendingUp, AlertTriangle, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Dashboard from "@/components/Dashboard";
 import POSSystem from "@/components/POSSystem";
 import InventoryManagement from "@/components/InventoryManagement";
 import UtangManagement from "@/components/UtangManagement";
 import CustomerManagement from "@/components/CustomerManagement";
 const Index = () => {
+  const { t } = useLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
   const tabs = [{
     value: "dashboard",
-    label: "Dashboard",
+    label: t('nav.dashboard'),
     shortLabel: "Dash",
     icon: TrendingUp,
     color: "from-blue-500 to-blue-600"
   }, {
     value: "pos",
-    label: "POS",
+    label: t('nav.pos'),
     shortLabel: "POS",
     icon: ShoppingCart,
     color: "from-green-500 to-green-600"
   }, {
     value: "inventory",
-    label: "Inventory",
+    label: t('nav.inventory'),
     shortLabel: "Stock",
     icon: Package,
     color: "from-purple-500 to-purple-600"
   }, {
     value: "utang",
-    label: "Utang",
+    label: t('nav.utang'),
     shortLabel: "Utang",
     icon: CreditCard,
     color: "from-red-500 to-red-600"
   }, {
     value: "customers",
-    label: "Customers",
+    label: t('nav.customers'),
     shortLabel: "Customers",
     icon: Users,
     color: "from-indigo-500 to-indigo-600"
@@ -56,7 +59,9 @@ const Index = () => {
         <div className="mb-6 relative">
           <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 to-red-600 rounded-2xl blur opacity-20"></div>
           <Card className="relative bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-            
+            <CardContent className="p-4 flex justify-end">
+              <LanguageSwitcher />
+            </CardContent>
           </Card>
         </div>
 
@@ -106,12 +111,14 @@ const Index = () => {
               {isMobileMenuOpen && <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 animate-fade-in">
                   <div className="absolute inset-x-0 top-0 bg-white rounded-b-3xl shadow-2xl animate-slide-in-right">
                     <div className="p-6">
-                      <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-semibold text-gray-800">Navigation</h3>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <h3 className="text-lg font-semibold text-gray-800">{t('nav.navigation')}</h3>
                         <Button variant="ghost" size="sm" onClick={() => setIsMobileMenuOpen(false)}>
                           <X className="h-5 w-5" />
                         </Button>
                       </div>
+                    </div>
                       
                       <div className="grid gap-3">
                         {tabs.map(tab => {
@@ -129,11 +136,11 @@ const Index = () => {
                               <div>
                                 <div className="font-medium">{tab.label}</div>
                                 <div className={`text-xs ${isActive ? 'text-white/80' : 'text-gray-500'}`}>
-                                  {tab.value === 'dashboard' && 'Overview & Analytics'}
-                                  {tab.value === 'pos' && 'Point of Sale System'}
-                                  {tab.value === 'inventory' && 'Stock Management'}
-                                  {tab.value === 'utang' && 'Credit Tracking'}
-                                  {tab.value === 'customers' && 'Customer Database'}
+                                  {tab.value === 'dashboard' && t('nav.description.dashboard')}
+                                  {tab.value === 'pos' && t('nav.description.pos')}
+                                  {tab.value === 'inventory' && t('nav.description.inventory')}
+                                  {tab.value === 'utang' && t('nav.description.utang')}
+                                  {tab.value === 'customers' && t('nav.description.customers')}
                                 </div>
                               </div>
                             </button>;
