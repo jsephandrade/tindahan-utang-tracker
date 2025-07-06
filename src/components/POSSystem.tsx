@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useStore } from "@/contexts/StoreContext";
 import { Product, TransactionItem } from "@/types/store";
-import { ShoppingCart, Plus, Minus, Trash2, User } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, User, Filter } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const POSSystem = () => {
@@ -18,6 +17,15 @@ const POSSystem = () => {
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
   const [amountPaid, setAmountPaid] = useState<number>(0);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'utang' | 'partial'>('cash');
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+
+  // Get unique categories from products
+  const categories = Array.from(new Set(products.map(product => product.category)));
+
+  // Filter products by selected category
+  const filteredProducts = selectedCategory === "all" 
+    ? products 
+    : products.filter(product => product.category === selectedCategory);
 
   const addToCart = (product: Product) => {
     if (product.stock <= 0) {
@@ -167,11 +175,29 @@ const POSSystem = () => {
       <div className="lg:col-span-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-orange-900">Products</CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle className="text-orange-900">Products</CardTitle>
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-orange-600" />
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Filter by category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <Card
                   key={product.id}
                   className={`cursor-pointer transition-all hover:shadow-md ${
@@ -193,6 +219,11 @@ const POSSystem = () => {
                   </CardContent>
                 </Card>
               ))}
+              {filteredProducts.length === 0 && (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-muted-foreground">No products found in this category.</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
