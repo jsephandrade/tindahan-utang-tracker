@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useStore } from "@/contexts/StoreContext";
 import { Product, TransactionItem } from "@/types/store";
-import { ShoppingCart, Plus, Minus, Trash2, User, Filter } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, User, Filter, Package, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const POSSystem = () => {
@@ -18,14 +18,18 @@ const POSSystem = () => {
   const [amountPaid, setAmountPaid] = useState<number>(0);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'utang' | 'partial'>('cash');
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   // Get unique categories from products
   const categories = Array.from(new Set(products.map(product => product.category)));
 
-  // Filter products by selected category
-  const filteredProducts = selectedCategory === "all" 
-    ? products 
-    : products.filter(product => product.category === selectedCategory);
+  // Filter products by selected category and search query
+  const filteredProducts = products.filter(product => {
+    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         product.category.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   const addToCart = (product: Product) => {
     if (product.stock <= 0) {
@@ -170,58 +174,130 @@ const POSSystem = () => {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Product Grid */}
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 p-2 md:p-0">
+      {/* Enhanced Products Grid */}
       <div className="lg:col-span-2">
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-orange-900">Products</CardTitle>
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-orange-600" />
-                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Filter by category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+        <Card className="border-orange-200 shadow-lg">
+          <CardHeader className="pb-4">
+            <div className="flex flex-col space-y-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-orange-900 text-lg md:text-xl">
+                  <Package className="h-5 w-5 md:h-6 md:w-6 text-orange-600" />
+                  Products
+                  <span className="bg-orange-100 text-orange-700 text-xs px-2 py-1 rounded-full ml-2">
+                    {filteredProducts.length}
+                  </span>
+                </CardTitle>
+              </div>
+              
+              {/* Enhanced Search and Filter */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 border-orange-200 focus:border-orange-400 focus:ring-orange-200"
+                  />
+                </div>
+                <div className="flex items-center gap-2 sm:min-w-[180px]">
+                  <Filter className="h-4 w-4 text-orange-600 flex-shrink-0" />
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="border-orange-200 focus:border-orange-400 focus:ring-orange-200">
+                      <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-orange-200">
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               {filteredProducts.map((product) => (
                 <Card
                   key={product.id}
-                  className={`cursor-pointer transition-all hover:shadow-md ${
+                  className={`group cursor-pointer transition-all duration-200 border-2 ${
                     product.stock <= 0 
-                      ? 'opacity-50 cursor-not-allowed' 
-                      : 'hover:bg-orange-50'
+                      ? 'opacity-50 cursor-not-allowed border-gray-200 bg-gray-50' 
+                      : 'hover:shadow-lg hover:scale-[1.02] border-orange-100 hover:border-orange-300 bg-gradient-to-br from-white to-orange-50/30'
                   }`}
                   onClick={() => addToCart(product)}
                 >
                   <CardContent className="p-4">
-                    <h3 className="font-medium text-sm mb-1">{product.name}</h3>
-                    <p className="text-xs text-muted-foreground mb-2">{product.category}</p>
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold text-orange-600">₱{product.price}</span>
-                      <span className={`text-xs ${product.stock <= product.minStock ? 'text-red-500' : 'text-green-600'}`}>
-                        Stock: {product.stock}
-                      </span>
+                    <div className="space-y-3">
+                      {/* Product Header */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-gray-900 text-sm md:text-base leading-tight truncate">
+                            {product.name}
+                          </h3>
+                          <p className="text-xs text-orange-600 font-medium mt-1 bg-orange-50 px-2 py-1 rounded-full inline-block">
+                            {product.category}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Price and Stock */}
+                      <div className="flex items-end justify-between">
+                        <div className="space-y-1">
+                          <div className="text-lg md:text-xl font-bold text-orange-600">
+                            ₱{product.price.toFixed(2)}
+                          </div>
+                          <div className={`text-xs font-medium px-2 py-1 rounded-full ${
+                            product.stock <= 0 
+                              ? 'bg-red-100 text-red-700' 
+                              : product.stock <= product.minStock 
+                                ? 'bg-yellow-100 text-yellow-700' 
+                                : 'bg-green-100 text-green-700'
+                          }`}>
+                            {product.stock <= 0 ? 'Out of Stock' : `${product.stock} left`}
+                          </div>
+                        </div>
+                        
+                        {product.stock > 0 && (
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="bg-orange-600 text-white rounded-full p-2">
+                              <Plus className="h-4 w-4" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
               ))}
+              
+              {/* Empty State */}
               {filteredProducts.length === 0 && (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-muted-foreground">No products found in this category.</p>
+                <div className="col-span-full">
+                  <div className="text-center py-12 px-4">
+                    <Package className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg font-medium">No products found</p>
+                    <p className="text-gray-400 text-sm mt-2">
+                      {searchQuery ? 'Try adjusting your search terms' : 'No products available in this category'}
+                    </p>
+                    {(searchQuery || selectedCategory !== "all") && (
+                      <Button 
+                        variant="outline" 
+                        className="mt-4 border-orange-200 text-orange-600 hover:bg-orange-50"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setSelectedCategory("all");
+                        }}
+                      >
+                        Clear Filters
+                      </Button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -229,7 +305,7 @@ const POSSystem = () => {
         </Card>
       </div>
 
-      {/* Cart and Checkout */}
+      {/* Cart and Checkout - keeping existing code */}
       <div className="space-y-4">
         {/* Cart */}
         <Card>
