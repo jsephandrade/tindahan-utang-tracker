@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Product, Customer, Transaction, UtangRecord, DashboardStats } from '@/types/store';
 
@@ -145,7 +146,7 @@ const sampleTransactions: Transaction[] = [
   },
 ];
 
-// Add sample utang records
+// Add sample utang records with due dates
 const sampleUtangRecords: UtangRecord[] = [
   {
     id: '1',
@@ -154,6 +155,7 @@ const sampleUtangRecords: UtangRecord[] = [
     transactionId: '1',
     amount: 90,
     description: 'Purchase - Lucky Me Instant Noodles, Coca-Cola 250ml',
+    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
     status: 'unpaid',
     payments: [],
     createdAt: new Date(),
@@ -165,6 +167,7 @@ const sampleUtangRecords: UtangRecord[] = [
     transactionId: '2',
     amount: 40,
     description: 'Purchase - Skyflakes Crackers, Lucky Me Instant Noodles',
+    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
     status: 'partial',
     payments: [
       {
@@ -250,6 +253,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         transactionId: newTransaction.id,
         amount: transactionData.utangAmount,
         description: `Purchase - ${transactionData.items.map(i => i.productName).join(', ')}`,
+        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
         status: 'unpaid',
         payments: [],
       };
@@ -262,6 +266,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       ...recordData,
       id: Date.now().toString(),
       createdAt: new Date(),
+      // Set due date to 3 days from creation if not provided
+      dueDate: recordData.dueDate || new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
     };
     setUtangRecords(prev => [...prev, newRecord]);
     

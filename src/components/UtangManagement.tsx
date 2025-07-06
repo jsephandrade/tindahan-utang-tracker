@@ -7,8 +7,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from "@/components/ui/badge";
 import { useStore } from "@/contexts/StoreContext";
 import { UtangRecord } from "@/types/store";
-import { CreditCard, DollarSign, Calendar, User, Receipt, ShoppingCart } from "lucide-react";
+import { CreditCard, DollarSign, Calendar, User, Receipt, ShoppingCart, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
 interface ConsolidatedUtangRecord {
   customerId: string;
   customerName: string;
@@ -18,7 +19,10 @@ interface ConsolidatedUtangRecord {
   remainingBalance: number;
   status: 'unpaid' | 'partial' | 'paid';
   latestDate: Date;
+  earliestDueDate?: Date;
+  isOverdue: boolean;
 }
+
 const UtangManagement = () => {
   const {
     utangRecords,
@@ -26,9 +30,8 @@ const UtangManagement = () => {
     transactions,
     addPayment
   } = useStore();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+  
   const [selectedCustomer, setSelectedCustomer] = useState<ConsolidatedUtangRecord | null>(null);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
@@ -46,6 +49,10 @@ const UtangManagement = () => {
       if (record.createdAt > existingCustomer.latestDate) {
         existingCustomer.latestDate = record.createdAt;
       }
+      // Update earliest due date
+      if (record.dueDate && (!existingCustomer.earliestDueDate || record.dueDate < existingCustomer.earliestDueDate)) {
+        existingCustomer.earliestDueDate = record.dueDate;
+      }
     } else {
       const recordPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
       acc.push({
@@ -54,17 +61,17 @@ const UtangManagement = () => {
         records: [record],
         totalAmount: record.amount,
         totalPaid: recordPaid,
-        remainingBalance: 0,
-        // Will be calculated below
-        status: 'unpaid',
-        // Will be calculated below
-        latestDate: record.createdAt
+        remainingBalance: 0, // Will be calculated below
+        status: 'unpaid', // Will be calculated below
+        latestDate: record.createdAt,
+        earliestDueDate: record.dueDate,
+        isOverdue: false // Will be calculated below
       });
     }
     return acc;
   }, [] as ConsolidatedUtangRecord[]);
 
-  // Calculate remaining balance and status for each consolidated record
+  // Calculate remaining balance, status, and overdue status for each consolidated record
   consolidatedRecords.forEach(consolidated => {
     consolidated.remainingBalance = consolidated.totalAmount - consolidated.totalPaid;
     if (consolidated.remainingBalance <= 0) {
@@ -74,7 +81,13 @@ const UtangManagement = () => {
     } else {
       consolidated.status = 'unpaid';
     }
+    
+    // Check if overdue (only for unpaid records)
+    if (consolidated.status !== 'paid' && consolidated.earliestDueDate) {
+      consolidated.isOverdue = new Date() > consolidated.earliestDueDate;
+    }
   });
+
   const handleAddPayment = () => {
     if (!selectedCustomer) return;
     if (paymentAmount <= 0) {
@@ -154,7 +167,16 @@ const UtangManagement = () => {
     });
     return allItems;
   };
-  return <div className="space-y-6">
+
+  const getDaysOverdue = (dueDate: Date) => {
+    const today = new Date();
+    const diffTime = today.getTime() - dueDate.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  return (
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -190,20 +212,24 @@ const UtangManagement = () => {
 
       {/* Consolidated Utang Records */}
       <div className="grid gap-4">
-        {filteredRecords.length === 0 ? <Card>
+        {filteredRecords.length === 0 ? (
+          <Card>
             <CardContent className="p-8 text-center">
               <CreditCard className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
               <p className="text-muted-foreground">No utang records found for the selected filter.</p>
             </CardContent>
-          </Card> : filteredRecords.map(consolidated => {
-        const allItems = getAllTransactionItems(consolidated);
-        const allPayments = consolidated.records.flatMap(r => r.payments);
-        return <Card key={consolidated.customerId} className="hover:shadow-md transition-shadow">
+          </Card>
+        ) : (
+          filteredRecords.map(consolidated => {
+            const allItems = getAllTransactionItems(consolidated);
+            const allPayments = consolidated.records.flatMap(r => r.payments);
+            
+            return (
+              <Card key={consolidated.customerId} className={`hover:shadow-md transition-shadow ${consolidated.isOverdue ? 'border-red-300 bg-red-50/30' : ''}`}>
                 <CardContent className="p-4 sm:p-6 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                     <div className="flex-1 space-y-3">
                       <div className="flex items-center gap-3 mb-2">
-                        
                         <h3 className="text-lg font-semibold truncate">{consolidated.customerName}</h3>
                         <Badge className={getStatusColor(consolidated.status)}>
                           {consolidated.status.toUpperCase()}
@@ -211,6 +237,12 @@ const UtangManagement = () => {
                         <Badge variant="outline" className="text-xs">
                           {consolidated.records.length} transaction{consolidated.records.length > 1 ? 's' : ''}
                         </Badge>
+                        {consolidated.isOverdue && (
+                          <Badge className="bg-red-100 text-red-800 flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3" />
+                            OVERDUE
+                          </Badge>
+                        )}
                       </div>
                       
                       <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
@@ -218,6 +250,19 @@ const UtangManagement = () => {
                           <Calendar className="h-4 w-4" />
                           <span>Latest: {consolidated.latestDate.toLocaleDateString()}</span>
                         </div>
+                        {consolidated.earliestDueDate && (
+                          <div className={`flex items-center gap-1 ${consolidated.isOverdue ? 'text-red-600 font-medium' : ''}`}>
+                            <Calendar className="h-4 w-4" />
+                            <span>
+                              Due: {consolidated.earliestDueDate.toLocaleDateString()}
+                              {consolidated.isOverdue && (
+                                <span className="ml-1">
+                                  ({getDaysOverdue(consolidated.earliestDueDate)} days overdue)
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Consolidated Receipt-style Product List */}
@@ -296,8 +341,10 @@ const UtangManagement = () => {
                       </div>
                     </div>}
                 </CardContent>
-              </Card>;
-      })}
+              </Card>
+            );
+          })
+        )}
       </div>
 
       {/* Payment Dialog */}
@@ -339,6 +386,8 @@ const UtangManagement = () => {
             </div>}
         </DialogContent>
       </Dialog>
-    </div>;
+    </div>
+  );
 };
+
 export default UtangManagement;
