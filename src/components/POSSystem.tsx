@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -178,10 +177,10 @@ const POSSystem = () => {
           <CardHeader>
             <div className="flex justify-between items-center">
               <CardTitle className="text-orange-900">Products</CardTitle>
-              <div className="flex items-center gap-4">
-                <Filter className="h-5 w-5 text-orange-600" />
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-orange-600" />
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-52">
+                  <SelectTrigger className="w-48">
                     <SelectValue placeholder="Filter by category" />
                   </SelectTrigger>
                   <SelectContent>
