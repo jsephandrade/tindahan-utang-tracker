@@ -5,11 +5,13 @@ import { ShoppingCart, Package, Users, CreditCard, TrendingUp, AlertTriangle, Me
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import RealTimeClock from "@/components/RealTimeClock";
 import Dashboard from "@/components/Dashboard";
 import POSSystem from "@/components/POSSystem";
 import InventoryManagement from "@/components/InventoryManagement";
 import UtangManagement from "@/components/UtangManagement";
 import CustomerManagement from "@/components/CustomerManagement";
+
 const Index = () => {
   const { t } = useLanguage();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -59,7 +61,8 @@ const Index = () => {
         <div className="mb-6 relative">
           <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 to-red-600 rounded-2xl blur opacity-20"></div>
           <Card className="relative bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-            <CardContent className="p-4 flex justify-end">
+            <CardContent className="p-4 flex justify-end items-center gap-3">
+              <RealTimeClock />
               <LanguageSwitcher />
             </CardContent>
           </Card>
