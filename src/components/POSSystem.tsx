@@ -208,9 +208,7 @@ const POSSystem = () => {
                             {product.name}
                           </h3>
                           {product.stock > 0 && <div className="opacity-0 group-hover:opacity-100 transition-opacity ml-2">
-                              <div className="bg-orange-600 text-white rounded-full p-1.5">
-                                
-                              </div>
+                              
                             </div>}
                         </div>
                         
