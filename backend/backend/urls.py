@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import include, path
 from rest_framework import routers
 
-from store.view import (
+from store.views import (
     CustomerViewSet, 
     PaymentViewSet, 
     ProductViewSet,                 
