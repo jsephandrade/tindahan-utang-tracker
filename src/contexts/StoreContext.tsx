@@ -1,6 +1,27 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product, Customer, Transaction, UtangRecord, DashboardStats } from '@/types/store';
+import { Product, Customer, Transaction, UtangRecord, Payment, DashboardStats } from '@/types/store';
+import {
+  getProducts,
+  createProduct,
+  updateProduct as updateProductApi,
+  deleteProduct as deleteProductApi,
+  getCustomers,
+  createCustomer,
+  updateCustomer as updateCustomerApi,
+  deleteCustomer as deleteCustomerApi,
+  getTransactions,
+  createTransaction,
+  updateTransaction as updateTransactionApi,
+  deleteTransaction as deleteTransactionApi,
+  getUtangRecords,
+  createUtangRecord,
+  updateUtangRecord as updateUtangRecordApi,
+  deleteUtangRecord as deleteUtangRecordApi,
+  createPayment,
+  updatePayment as updatePaymentApi,
+  deletePayment as deletePaymentApi,
+} from '@/lib/api';
 
 interface StoreContextType {
   // Products
@@ -13,15 +34,22 @@ interface StoreContextType {
   customers: Customer[];
   addCustomer: (customer: Omit<Customer, 'id' | 'createdAt' | 'totalUtang'>) => void;
   updateCustomer: (id: string, updates: Partial<Customer>) => void;
+  deleteCustomer: (id: string) => void;
   
   // Transactions
   transactions: Transaction[];
   addTransaction: (transaction: Omit<Transaction, 'id' | 'createdAt'>) => void;
+  updateTransaction: (id: string, updates: Partial<Transaction>) => void;
+  deleteTransaction: (id: string) => void;
   
   // Utang
   utangRecords: UtangRecord[];
   addUtangRecord: (record: Omit<UtangRecord, 'id' | 'createdAt'>) => void;
+  updateUtangRecord: (id: string, updates: Partial<UtangRecord>) => void;
+  deleteUtangRecord: (id: string) => void;
   addPayment: (utangId: string, amount: number, note?: string) => void;
+  updatePayment: (id: string, updates: Partial<Payment>) => void;
+  deletePayment: (id: string) => void;
   
   // Dashboard
   getDashboardStats: () => DashboardStats;
@@ -29,214 +57,60 @@ interface StoreContextType {
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
-// Sample data for demonstration
-const sampleProducts: Product[] = [
-  {
-    id: '1',
-    name: 'Lucky Me Instant Noodles',
-    category: 'Instant Food',
-    price: 15,
-    stock: 50,
-    minStock: 10,
-    barcode: '123456789',
-    supplier: 'Monde Nissin',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: '2',
-    name: 'Coca-Cola 250ml',
-    category: 'Beverages',
-    price: 20,
-    stock: 30,
-    minStock: 5,
-    supplier: 'Coca-Cola Philippines',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: '3',
-    name: 'Skyflakes Crackers',
-    category: 'Snacks',
-    price: 25,
-    stock: 8,
-    minStock: 10,
-    supplier: 'M.Y. San Corp',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-];
-
-const sampleCustomers: Customer[] = [
-  {
-    id: '1',
-    name: 'Maria Santos',
-    address: '123 Barangay Street',
-    phone: '09123456789',
-    totalUtang: 150,
-    createdAt: new Date(),
-  },
-  {
-    id: '2',
-    name: 'Juan Dela Cruz',
-    address: '456 Sitio Road',
-    phone: '09987654321',
-    totalUtang: 75,
-    createdAt: new Date(),
-  },
-];
-
-// Add sample transactions with utang
-const sampleTransactions: Transaction[] = [
-  {
-    id: '1',
-    customerId: '1',
-    customerName: 'Maria Santos',
-    items: [
-      {
-        productId: '1',
-        productName: 'Lucky Me Instant Noodles',
-        quantity: 2,
-        price: 15,
-        total: 30,
-      },
-      {
-        productId: '2',
-        productName: 'Coca-Cola 250ml',
-        quantity: 3,
-        price: 20,
-        total: 60,
-      },
-    ],
-    totalAmount: 90,
-    amountPaid: 0,
-    change: 0,
-    utangAmount: 90,
-    paymentMethod: 'utang',
-    createdAt: new Date(),
-    status: 'completed',
-  },
-  {
-    id: '2',
-    customerId: '2',
-    customerName: 'Juan Dela Cruz',
-    items: [
-      {
-        productId: '3',
-        productName: 'Skyflakes Crackers',
-        quantity: 1,
-        price: 25,
-        total: 25,
-      },
-      {
-        productId: '1',
-        productName: 'Lucky Me Instant Noodles',
-        quantity: 1,
-        price: 15,
-        total: 15,
-      },
-    ],
-    totalAmount: 40,
-    amountPaid: 0,
-    change: 0,
-    utangAmount: 40,
-    paymentMethod: 'utang',
-    createdAt: new Date(),
-    status: 'completed',
-  },
-];
-
-// Add sample utang records with due dates
-const sampleUtangRecords: UtangRecord[] = [
-  {
-    id: '1',
-    customerId: '1',
-    customerName: 'Maria Santos',
-    transactionId: '1',
-    amount: 90,
-    description: 'Purchase - Lucky Me Instant Noodles, Coca-Cola 250ml',
-    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-    status: 'unpaid',
-    payments: [],
-    createdAt: new Date(),
-  },
-  {
-    id: '2',
-    customerId: '2',
-    customerName: 'Juan Dela Cruz',
-    transactionId: '2',
-    amount: 40,
-    description: 'Purchase - Skyflakes Crackers, Lucky Me Instant Noodles',
-    dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-    status: 'partial',
-    payments: [
-      {
-        id: '1',
-        amount: 15,
-        date: new Date(),
-        note: 'Partial payment',
-      },
-    ],
-    createdAt: new Date(),
-  },
-];
-
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [products, setProducts] = useState<Product[]>(sampleProducts);
-  const [customers, setCustomers] = useState<Customer[]>(sampleCustomers);
-  const [transactions, setTransactions] = useState<Transaction[]>(sampleTransactions);
-  const [utangRecords, setUtangRecords] = useState<UtangRecord[]>(sampleUtangRecords);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [utangRecords, setUtangRecords] = useState<UtangRecord[]>([]);
 
-  const addProduct = (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const newProduct: Product = {
-      ...productData,
-      id: Date.now().toString(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    setProducts(prev => [...prev, newProduct]);
+  useEffect(() => {
+    getProducts().then(setProducts).catch(console.error);
+    getCustomers().then(setCustomers).catch(console.error);
+    getTransactions().then(setTransactions).catch(console.error);
+    getUtangRecords().then(setUtangRecords).catch(console.error);
+  }, []);
+
+  const addProduct = async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const created = await createProduct(productData);
+    setProducts(prev => [...prev, created as Product]);
   };
 
-  const updateProduct = (id: string, updates: Partial<Product>) => {
+  const updateProduct = async (id: string, updates: Partial<Product>) => {
+    const updated = await updateProductApi(id, updates);
     setProducts(prev =>
-      prev.map(product =>
-        product.id === id
-          ? { ...product, ...updates, updatedAt: new Date() }
-          : product
-      )
+      prev.map(product => (product.id === id ? (updated as Product) : product))
     );
   };
 
-  const deleteProduct = (id: string) => {
+  const deleteProduct = async (id: string) => {
+    await deleteProductApi(id);
     setProducts(prev => prev.filter(product => product.id !== id));
   };
 
-  const addCustomer = (customerData: Omit<Customer, 'id' | 'createdAt' | 'totalUtang'>) => {
-    const newCustomer: Customer = {
-      ...customerData,
-      id: Date.now().toString(),
-      totalUtang: 0,
-      createdAt: new Date(),
-    };
-    setCustomers(prev => [...prev, newCustomer]);
+  const addCustomer = async (
+    customerData: Omit<Customer, 'id' | 'createdAt' | 'totalUtang'>,
+  ) => {
+    const created = await createCustomer(customerData);
+    setCustomers(prev => [...prev, created as Customer]);
   };
 
-  const updateCustomer = (id: string, updates: Partial<Customer>) => {
+  const updateCustomer = async (id: string, updates: Partial<Customer>) => {
+    const updated = await updateCustomerApi(id, updates);
     setCustomers(prev =>
-      prev.map(customer =>
-        customer.id === id ? { ...customer, ...updates } : customer
-      )
+      prev.map(customer => (customer.id === id ? (updated as Customer) : customer))
     );
   };
 
-  const addTransaction = (transactionData: Omit<Transaction, 'id' | 'createdAt'>) => {
-    const newTransaction: Transaction = {
-      ...transactionData,
-      id: Date.now().toString(),
-      createdAt: new Date(),
-    };
-    
-    setTransactions(prev => [...prev, newTransaction]);
+  const deleteCustomer = async (id: string) => {
+    await deleteCustomerApi(id);
+    setCustomers(prev => prev.filter(c => c.id !== id));
+  };
+
+  const addTransaction = async (
+    transactionData: Omit<Transaction, 'id' | 'createdAt'>,
+  ) => {
+    const created = (await createTransaction(transactionData)) as Transaction;
+    setTransactions(prev => [...prev, created]);
     
     // Update product stock
     transactionData.items.forEach(item => {
@@ -250,10 +124,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const utangRecord: Omit<UtangRecord, 'id' | 'createdAt'> = {
         customerId: transactionData.customerId,
         customerName: transactionData.customerName || '',
-        transactionId: newTransaction.id,
+        transactionId: created.id,
         amount: transactionData.utangAmount,
         description: `Purchase - ${transactionData.items.map(i => i.productName).join(', ')}`,
-        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+        dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
         status: 'unpaid',
         payments: [],
       };
@@ -261,54 +135,84 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const addUtangRecord = (recordData: Omit<UtangRecord, 'id' | 'createdAt'>) => {
-    const newRecord: UtangRecord = {
-      ...recordData,
-      id: Date.now().toString(),
-      createdAt: new Date(),
-      // Set due date to 3 days from creation if not provided
-      dueDate: recordData.dueDate || new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-    };
-    setUtangRecords(prev => [...prev, newRecord]);
-    
-    // Update customer total utang
+  const addUtangRecord = async (
+    recordData: Omit<UtangRecord, 'id' | 'createdAt'>,
+  ) => {
+    const created = (await createUtangRecord(recordData)) as UtangRecord;
+    setUtangRecords(prev => [...prev, created]);
+
     const customer = customers.find(c => c.id === recordData.customerId);
     if (customer) {
       updateCustomer(customer.id, {
-        totalUtang: customer.totalUtang + recordData.amount
+        totalUtang: customer.totalUtang + recordData.amount,
       });
     }
   };
 
-  const addPayment = (utangId: string, amount: number, note?: string) => {
+  const addPayment = async (utangId: string, amount: number, note?: string) => {
+    const created = (await createPayment({ utang_record: utangId, amount, note })) as Payment;
     setUtangRecords(prev =>
       prev.map(record => {
         if (record.id === utangId) {
-          const newPayment = {
-            id: Date.now().toString(),
-            amount,
-            date: new Date(),
-            note,
-          };
-          const totalPaid = [...record.payments, newPayment].reduce((sum, p) => sum + p.amount, 0);
+          const totalPaid = [...record.payments, created].reduce((sum, p) => sum + p.amount, 0);
           const status = totalPaid >= record.amount ? 'paid' : 'partial';
           
           // Update customer total utang
           const customer = customers.find(c => c.id === record.customerId);
           if (customer) {
             updateCustomer(customer.id, {
-              totalUtang: customer.totalUtang - amount
+              totalUtang: customer.totalUtang - amount,
             });
           }
-          
+
           return {
             ...record,
-            payments: [...record.payments, newPayment],
+            payments: [...record.payments, created],
             status: status as 'unpaid' | 'partial' | 'paid',
           };
         }
         return record;
       })
+    );
+  };
+
+  const updateTransaction = async (id: string, updates: Partial<Transaction>) => {
+    const updated = await updateTransactionApi(id, updates);
+    setTransactions(prev => prev.map(t => (t.id === id ? (updated as Transaction) : t)));
+  };
+
+  const deleteTransaction = async (id: string) => {
+    await deleteTransactionApi(id);
+    setTransactions(prev => prev.filter(t => t.id !== id));
+  };
+
+  const updateUtangRecord = async (id: string, updates: Partial<UtangRecord>) => {
+    const updated = await updateUtangRecordApi(id, updates);
+    setUtangRecords(prev => prev.map(r => (r.id === id ? (updated as UtangRecord) : r)));
+  };
+
+  const deleteUtangRecord = async (id: string) => {
+    await deleteUtangRecordApi(id);
+    setUtangRecords(prev => prev.filter(r => r.id !== id));
+  };
+
+  const updatePayment = async (id: string, updates: Partial<Payment>) => {
+    const updated = await updatePaymentApi(id, updates);
+    setUtangRecords(prev =>
+      prev.map(record => ({
+        ...record,
+        payments: record.payments.map(p => (p.id === id ? (updated as Payment) : p)),
+      }))
+    );
+  };
+
+  const deletePayment = async (id: string) => {
+    await deletePaymentApi(id);
+    setUtangRecords(prev =>
+      prev.map(record => ({
+        ...record,
+        payments: record.payments.filter(p => p.id !== id),
+      }))
     );
   };
 
@@ -347,11 +251,18 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         customers,
         addCustomer,
         updateCustomer,
+        deleteCustomer,
         transactions,
         addTransaction,
+        updateTransaction,
+        deleteTransaction,
         utangRecords,
         addUtangRecord,
+        updateUtangRecord,
+        deleteUtangRecord,
         addPayment,
+        updatePayment,
+        deletePayment,
         getDashboardStats,
       }}
     >
