@@ -5,7 +5,7 @@ export interface Product {
   category: string;
   price: number;
   stock: number;
-  minStock: number;
+  min_stock: number;
   barcode?: string;
   supplier?: string;
   createdAt: Date;

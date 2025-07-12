@@ -98,7 +98,7 @@ const InventoryManagement = () => {
       category: product.category,
       price: product.price,
       stock: product.stock,
-      minStock: product.minStock,
+      minStock: product.min_stock,
       barcode: product.barcode || "",
       supplier: product.supplier || "",
     });
@@ -110,7 +110,7 @@ const InventoryManagement = () => {
     product.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const lowStockProducts = products.filter(p => p.stock <= p.minStock);
+  const lowStockProducts = products.filter(p => p.stock <= p.min_stock);
 
   return (
     <div className="space-y-6">
@@ -232,7 +232,7 @@ const InventoryManagement = () => {
               {lowStockProducts.map((product) => (
                 <div key={product.id} className="bg-white p-3 rounded border border-orange-200">
                   <p className="font-medium">{product.name}</p>
-                  <p className="text-sm text-red-600">Stock: {product.stock} (Min: {product.minStock})</p>
+                  <p className="text-sm text-red-600">Stock: {product.stock} (Min: {product.min_stock})</p>
                 </div>
               ))}
             </div>
@@ -278,13 +278,13 @@ const InventoryManagement = () => {
                   <div className="bg-gray-50 rounded-lg p-3">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm text-gray-600">Current Stock</span>
-                      <span className={`font-bold ${product.stock <= product.minStock ? 'text-red-600' : 'text-green-600'}`}>
+                      <span className={`font-bold ${product.stock <= product.min_stock ? 'text-red-600' : 'text-green-600'}`}>
                         {product.stock}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Min Stock</span>
-                      <span className="text-sm text-gray-700">{product.minStock}</span>
+                      <span className="text-sm text-gray-700">{product.min_stock}</span>
                     </div>
                   </div>
 
