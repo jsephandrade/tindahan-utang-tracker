@@ -59,6 +59,8 @@ export interface UtangRecord {
 
 export interface Payment {
   id: string;
+  utang_record?: string;
+  utangRecord?: string; // For backward compatibility
   amount: number;
   date: Date;
   note?: string;

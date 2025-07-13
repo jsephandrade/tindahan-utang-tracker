@@ -8,6 +8,7 @@ import { useStore } from "@/contexts/StoreContext";
 import { Product } from "@/types/store";
 import { Package, Plus, Edit, Trash2, AlertTriangle, Barcode, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { add } from "date-fns";
 
 const InventoryManagement = () => {
   const { products, addProduct, updateProduct, deleteProduct } = useStore();
@@ -50,7 +51,10 @@ const InventoryManagement = () => {
       return;
     }
 
-    addProduct(productForm);
+    addProduct({
+      ...productForm,
+      min_stock: productForm.minStock,
+    });
     resetForm();
     setIsAddDialogOpen(false);
     
@@ -72,7 +76,10 @@ const InventoryManagement = () => {
       return;
     }
 
-    updateProduct(editingProduct.id, productForm);
+    updateProduct(editingProduct.id, {
+      ...productForm,
+      min_stock: productForm.minStock,
+    });
     resetForm();
     setIsEditDialogOpen(false);
     setEditingProduct(null);

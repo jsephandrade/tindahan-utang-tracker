@@ -18,7 +18,7 @@ async function request<T>(url: string, options?: RequestInit): Promise<T> {
     throw new Error(`Request failed: ${res.status}`);
   }
   const data = await res.json();
-  return camelize(data) as T;
+  return convertNumbers(camelize(data)) as T;
 }
 
 function camelize(obj: any): any {
@@ -35,6 +35,32 @@ function camelize(obj: any): any {
   }
   return obj;
 }
+
+// Convert numeric strings for known numeric fields to actual numbers
+const numericKeyPattern = /(price|amount|total|stock|quantity|utang|sales|paid|change|balance)/i;
+
+function convertNumbers(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(convertNumbers);
+  }
+  if (obj && typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj).map(([k, v]) => [k, convertNumbers(convertValue(k, v))])
+    );
+  }
+  return obj;
+}
+
+function convertValue(key: string, value: any) {
+  if (typeof value === 'string' && numericKeyPattern.test(key)) {
+    const num = parseFloat(value);
+    if (!isNaN(num)) {
+      return num;
+    }
+  }
+  return value;
+}
+
 
 export function getProducts() {
   return request<Product[]>('/products/');
