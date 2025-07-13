@@ -205,7 +205,7 @@ const Dashboard = () => {
                       </p>
                       <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
                         <Clock className="h-3 w-3" />
-                        {record.createdAt.toLocaleDateString()}
+                        {new Date(record.createdAt as any).toLocaleDateString()}
                       </div>
                     </div>
                     <div className="text-right ml-3">

@@ -226,10 +226,12 @@ const CustomerManagement = () => {
                           <div className="flex-1 min-w-0">
                             <h3 className="text-xl font-bold text-gray-900 truncate">{customer.name}</h3>
                             <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              {/* <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <Calendar className="h-4 w-4" />
-                                <span>Since {customer.createdAt.toLocaleDateString()}</span>
-                              </div>
+                                <span>
+                                  Since {new Date(customer.createdAt as any).toLocaleDateString()}
+                                </span>
+                              </div> */}
                               {customer.phone && <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                   <Phone className="h-4 w-4" />
                                   <span>{customer.phone}</span>
@@ -293,8 +295,8 @@ RECORDS</p>
                                       <div className="flex items-center gap-2 mb-1">
                                         <span className="font-semibold text-gray-900">P{record.amount.toFixed(2)}</span>
                                         <span className="text-xs text-muted-foreground">
-                                          • {record.createdAt.toLocaleDateString()}
-                                        </span>
+                                            • {new Date(record.createdAt as any).toLocaleDateString()}
+                                          </span>
                                       </div>
                                       {balance > 0 && <div className="text-sm text-red-600 font-medium">
                                           Balance: P{balance.toFixed(2)}
