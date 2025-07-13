@@ -38,6 +38,8 @@ function camelize(obj: any): any {
 
 // Convert numeric strings for known numeric fields to actual numbers
 const numericKeyPattern = /(price|amount|total|stock|quantity|utang|sales|paid|change|balance)/i;
+// Recognize date-like keys to convert ISO strings to Date objects
+const dateKeyPattern = /(date|createdAt|updatedAt|due|dueDate|lastTransaction)/i;
 
 function convertNumbers(obj: any): any {
   if (Array.isArray(obj)) {
@@ -52,10 +54,15 @@ function convertNumbers(obj: any): any {
 }
 
 function convertValue(key: string, value: any) {
-  if (typeof value === 'string' && numericKeyPattern.test(key)) {
-    const num = parseFloat(value);
-    if (!isNaN(num)) {
-      return num;
+  if (typeof value === 'string') {
+    if (numericKeyPattern.test(key)) {
+      const num = parseFloat(value);
+      if (!isNaN(num)) {
+        return num;
+      }
+    }
+    if (dateKeyPattern.test(key) && !isNaN(Date.parse(value))) {
+      return new Date(value);
     }
   }
   return value;
