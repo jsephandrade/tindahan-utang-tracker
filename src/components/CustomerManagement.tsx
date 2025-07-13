@@ -191,7 +191,8 @@ const CustomerManagement = () => {
                   <p className="text-2xl font-bold text-gray-900">
                     {customers.filter(c => {
                     const thisMonth = new Date().getMonth();
-                    return c.createdAt.getMonth() === thisMonth;
+                    const createdMonth = new Date(c.createdAt as any).getMonth();
+                    return createdMonth === thisMonth;
                   }).length}
                   </p>
                 </div>
