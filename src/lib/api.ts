@@ -39,6 +39,25 @@ function camelize(obj: any): any {
   return obj;
 }
 
+function decamelize(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(decamelize);
+  }
+  if (obj && typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj)
+        .filter(([, v]) => v !== undefined)
+        .map(([k, v]) => [
+          k
+            .replace(/([A-Z])/g, '_$1')
+            .toLowerCase(),
+          decamelize(v),
+        ])
+    );
+  }
+  return obj;
+}
+
 // Convert numeric strings for known numeric fields to actual numbers
 const numericKeyPattern = /(price|amount|total|stock|quantity|utang|sales|paid|change|balance)/i;
 // Recognize date-like keys to convert ISO strings to Date objects
@@ -79,14 +98,14 @@ export function getProducts() {
 export function createProduct(data: Partial<Product>) {
   return request<Product>('/products/', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify(decamelize),
   });
 }
 
 export function updateProduct(id: string, data: Partial<Product>) {
   return request<Product>(`/products/${id}/`, {
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: JSON.stringify(decamelize),
   });
 }
 
@@ -101,14 +120,14 @@ export function getCustomers() {
 export function createCustomer(data: Partial<Customer>) {
   return request<Customer>('/customers/', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify(decamelize),
   });
 }
 
 export function updateCustomer(id: string, data: Partial<Customer>) {
   return request<Customer>(`/customers/${id}/`, {
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: JSON.stringify(decamelize(data)),
   });
 }
 
@@ -123,14 +142,14 @@ export function getTransactions() {
 export function createTransaction(data: Partial<Transaction>) {
   return request<Transaction>('/transactions/', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify(decamelize),
   });
 }
 
 export function updateTransaction(id: string, data: Partial<Transaction>) {
   return request<Transaction>(`/transactions/${id}/`, {
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: JSON.stringify(decamelize(data)),
   });
 }
 
@@ -145,14 +164,14 @@ export function getUtangRecords() {
 export function createUtangRecord(data: Partial<UtangRecord>) {
   return request<UtangRecord>('/utang-records/', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify(decamelize(data)),
   });
 }
 
 export function updateUtangRecord(id: string, data: Partial<UtangRecord>) {
   return request<UtangRecord>(`/utang-records/${id}/`, {
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: JSON.stringify(decamelize(data)),
   });
 }
 
@@ -167,14 +186,14 @@ export function getPayments() {
 export function createPayment(data: Partial<Payment>) {
   return request<Payment>('/payments/', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify(decamelize(data)),
   });
 }
 
 export function updatePayment(id: string, data: Partial<Payment>) {
   return request<Payment>(`/payments/${id}/`, {
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: JSON.stringify(decamelize(data)),
   });
 }
 
