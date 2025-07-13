@@ -53,7 +53,7 @@ const InventoryManagement = () => {
 
     addProduct({
       ...productForm,
-      min_stock: productForm.minStock,
+      minStock: productForm.minStock,
     });
     resetForm();
     setIsAddDialogOpen(false);
@@ -78,7 +78,7 @@ const InventoryManagement = () => {
 
     updateProduct(editingProduct.id, {
       ...productForm,
-      min_stock: productForm.minStock,
+      minStock: productForm.minStock,
     });
     resetForm();
     setIsEditDialogOpen(false);
@@ -105,7 +105,7 @@ const InventoryManagement = () => {
       category: product.category,
       price: product.price,
       stock: product.stock,
-      minStock: product.min_stock,
+      minStock: product.minStock,
       barcode: product.barcode || "",
       supplier: product.supplier || "",
     });
@@ -117,7 +117,7 @@ const InventoryManagement = () => {
     product.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const lowStockProducts = products.filter(p => p.stock <= p.min_stock);
+  const lowStockProducts = products.filter(p => p.stock <= p.minStock);
 
   return (
     <div className="space-y-6">
@@ -239,7 +239,7 @@ const InventoryManagement = () => {
               {lowStockProducts.map((product) => (
                 <div key={product.id} className="bg-white p-3 rounded border border-orange-200">
                   <p className="font-medium">{product.name}</p>
-                  <p className="text-sm text-red-600">Stock: {product.stock} (Min: {product.min_stock})</p>
+                  <p className="text-sm text-red-600">Stock: {product.stock} (Min: {product.minStock})</p>
                 </div>
               ))}
             </div>
@@ -285,13 +285,13 @@ const InventoryManagement = () => {
                   <div className="bg-gray-50 rounded-lg p-3">
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-sm text-gray-600">Current Stock</span>
-                      <span className={`font-bold ${product.stock <= product.min_stock ? 'text-red-600' : 'text-green-600'}`}>
+                      <span className={`font-bold ${product.stock <= product.minStock ? 'text-red-600' : 'text-green-600'}`}>
                         {product.stock}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-600">Min Stock</span>
-                      <span className="text-sm text-gray-700">{product.min_stock}</span>
+                      <span className="text-sm text-gray-700">{product.minStock}</span>
                     </div>
                   </div>
 

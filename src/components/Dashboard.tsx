@@ -18,7 +18,7 @@ const Dashboard = () => {
   const { t } = useLanguage();
   const stats = getDashboardStats();
 
-  const lowStockProducts = products.filter(p => p.stock <= p.min_stock);
+  const lowStockProducts = products.filter(p => p.stock <= p.minStock);
   const recentUtang = utangRecords
     .filter(r => r.status === 'unpaid')
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
@@ -148,7 +148,7 @@ const Dashboard = () => {
                           {product.category}
                         </span>
                         <span className="text-xs text-gray-500">
-                          Min: {product.min_stock}
+                          Min: {product.minStock}
                         </span>
                       </div>
                     </div>

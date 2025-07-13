@@ -222,7 +222,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     
     const totalSales = transactions.reduce((sum, t) => sum + t.totalAmount, 0);
     const totalUtang = customers.reduce((sum, c) => sum + c.totalUtang, 0);
-    const lowStockItems = products.filter(p => p.stock <= p.min_stock).length;
+    const lowStockItems = products.filter(p => p.stock <= p.minStock).length;
     const totalCustomers = customers.length;
     const dailySales = transactions
       .filter(t => t.createdAt >= startOfDay)

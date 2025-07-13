@@ -216,7 +216,7 @@ const POSSystem = () => {
                           <span className="text-xs text-orange-600 font-medium bg-orange-50 px-2 py-1 rounded-full">
                             {product.category}
                           </span>
-                          <div className={`text-xs font-medium px-2 py-1 rounded-full ${product.stock <= 0 ? 'bg-red-100 text-red-700' : product.stock <= product.min_stock ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
+                          <div className={`text-xs font-medium px-2 py-1 rounded-full ${product.stock <= 0 ? 'bg-red-100 text-red-700' : product.stock <= product.minStock ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
                             {product.stock <= 0 ? 'Out of Stock' : `${product.stock} left`}
                           </div>
                         </div>
