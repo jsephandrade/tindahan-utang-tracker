@@ -21,7 +21,10 @@ const Dashboard = () => {
   const lowStockProducts = products.filter(p => p.stock <= p.minStock);
   const recentUtang = utangRecords
     .filter(r => r.status === 'unpaid')
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt as any).getTime() - new Date(a.createdAt as any).getTime(),
+    )
     .slice(0, 5);
 
   const statCards = [

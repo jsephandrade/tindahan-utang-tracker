@@ -39,8 +39,8 @@ const UtangManagement = () => {
       existingCustomer.totalAmount += record.amount;
       const recordPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
       existingCustomer.totalPaid += recordPaid;
-      if (record.createdAt > existingCustomer.latestDate) {
-        existingCustomer.latestDate = record.createdAt;
+      if (new Date(record.createdAt as any) > existingCustomer.latestDate) {
+        existingCustomer.latestDate = new Date(record.createdAt as any);
       }
       // Update earliest due date
       if (record.dueDate && (!existingCustomer.earliestDueDate || record.dueDate < existingCustomer.earliestDueDate)) {
@@ -56,7 +56,7 @@ const UtangManagement = () => {
         totalPaid: recordPaid,
         remainingBalance: 0, // Will be calculated below
         status: 'unpaid', // Will be calculated below
-        latestDate: record.createdAt,
+        latestDate: new Date(record.createdAt as any),
         earliestDueDate: record.dueDate,
         isOverdue: false // Will be calculated below
       });

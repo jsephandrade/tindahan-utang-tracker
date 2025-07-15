@@ -228,7 +228,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       .filter(t => t.createdAt >= startOfDay)
       .reduce((sum, t) => sum + t.totalAmount, 0);
     const monthlyUtang = utangRecords
-      .filter(r => r.createdAt.getMonth() === today.getMonth())
+      .filter(r => new Date(r.createdAt as any).getMonth() === today.getMonth())
       .reduce((sum, r) => sum + r.amount, 0);
 
     return {

@@ -47,7 +47,7 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
           allItems.push({
             ...item,
             transactionId: record.transactionId,
-            date: record.createdAt
+            date: new Date(record.createdAt as any),
           });
         });
       }
