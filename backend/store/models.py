@@ -107,7 +107,10 @@ class Payment(models.Model):
         UtangRecord, related_name="payments", on_delete=models.CASCADE
     )
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    date = models.DateTimeField()
+    # Automatically timestamp when the payment record is created. Making this
+    # field optional on POST requests avoids validation errors on the API when
+    # the frontend does not explicitly provide a date value.
+    date = models.DateTimeField(auto_now_add=True)
     note = models.TextField(blank=True, null=True)
 
     def __str__(self):

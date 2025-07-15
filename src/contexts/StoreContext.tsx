@@ -165,7 +165,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const addPayment = async (utangId: string, amount: number, note?: string) => {
-    const created = (await createPayment({ utang_record: utangId, amount, note })) as Payment;
+    const created = (await createPayment({
+      utang_record: utangId,
+      amount,
+      note,
+      // Backend requires a date value for each payment
+      date: new Date(),
+    })) as Payment;
     setUtangRecords(prev =>
       prev.map(record => {
         if (record.id === utangId) {
