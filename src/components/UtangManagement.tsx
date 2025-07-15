@@ -34,9 +34,9 @@ const UtangManagement = () => {
   // Group utang records by customer
   const consolidatedRecords: ConsolidatedUtangRecord[] = utangRecords.reduce((acc, record) => {
     const customerId = (record as any).customerId ?? (record as any).customer;
-    const customerName = 
+    const customerName =
       record.customerName ||
-      customerId.find(c => c.id === customerId)?.name ||
+      customers.find(c => c.id === customerId)?.name ||
       "";
       const existingCustomer = acc.find(c => c.customerId === customerId);
     if (existingCustomer) {
