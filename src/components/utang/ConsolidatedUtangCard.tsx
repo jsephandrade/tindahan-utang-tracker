@@ -195,8 +195,13 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
               Payment History
             </h4>
             <div className="space-y-2">
-              {allPayments.sort((a, b) => b.date.getTime() - a.date.getTime()).map(payment => (
-                <div key={payment.id} className="flex justify-between items-center text-sm bg-green-50 p-2 rounded">
+              {allPayments
+                .sort((a, b) => b.date.getTime() - a.date.getTime())
+                .map((payment, idx) => (
+                <div
+                  key={`${payment.id}-${idx}`}
+                  className="flex justify-between items-center text-sm bg-green-50 p-2 rounded"
+                >
                   <div>
                     <span className="font-medium">P{payment.amount.toFixed(2)}</span>
                     {payment.note && <span className="text-muted-foreground ml-2">- {payment.note}</span>}

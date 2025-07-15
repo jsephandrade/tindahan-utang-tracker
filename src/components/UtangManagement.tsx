@@ -174,9 +174,9 @@ const UtangManagement = () => {
             </CardContent>
           </Card>
         ) : (
-          filteredRecords.map(consolidated => (
+          filteredRecords.map((consolidated, idx) => (
             <ConsolidatedUtangCard
-              key={consolidated.customerId}
+              key={`${consolidated.customerId}-${idx}`}
               consolidated={consolidated}
               transactions={transactions}
               onOpenPaymentDialog={openPaymentDialog}
