@@ -142,6 +142,14 @@ export function getTransactions() {
     transactions.map(t => ({
       ...t,
       customerId: (t as any).customer ?? t.customerId,
+      customerName: (t as any).customerName ?? t.customerName,
+      items: (t.items ?? []).map((i: any) => ({
+        productId: i.productId ?? i.product,
+        productName: i.productName ?? '',
+        quantity: i.quantity,
+        price: i.price,
+        total: i.total,
+      })),
     })) as Transaction[]
   );
 }

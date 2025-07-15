@@ -12,12 +12,25 @@ class CustomerSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class TransactionItemSerializer(serializers.ModelSerializer):
+    """Serialize TransactionItem with product name and id for frontend."""
+    product_id = serializers.UUIDField(source="product.id", read_only=True)
+    product_name = serializers.CharField(source="product.name", read_only=True)
     class Meta:
         model = TransactionItem
-        fields = '__all__'
+        fields = [
+            "id",
+            "transaction",
+            "product",
+            "product_id",
+            "product_name",
+            "quantity",
+            "price",
+            "total",
+        ]
 
 class TransactionSerializer(serializers.ModelSerializer):
     items = TransactionItemSerializer(many=True, read_only=True)
+    customer_name = serializers.CharField(source="customer.name", read_only=True)
 
     class Meta:
         model = Transaction

@@ -114,7 +114,15 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     transactionData: Omit<Transaction, 'id' | 'createdAt'>,
   ) => {
     const created = (await createTransaction(transactionData)) as Transaction;
-    setTransactions(prev => [...prev, created]);
+    // DRF doesn't return the nested items or customer info, so merge them from
+    // the data we already have to keep our local state consistent
+    const transactionWithItems: Transaction = {
+      ...created,
+      items: transactionData.items,
+      customerId: transactionData.customerId,
+      customerName: transactionData.customerName,
+    };
+    setTransactions(prev => [...prev, transactionWithItems]);
     
     // Update product stock
     transactionData.items.forEach(item => {
