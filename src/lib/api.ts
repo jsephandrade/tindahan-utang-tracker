@@ -105,7 +105,7 @@ export function createProduct(data: Partial<Product>) {
 
 export function updateProduct(id: string, data: Partial<Product>) {
   return request<Product>(`/products/${id}/`, {
-    method: 'PUT',
+    method: 'PATCH',
     body: JSON.stringify(decamelize(data)),
   });
 }
@@ -128,7 +128,7 @@ export function createCustomer(data: Partial<Customer>) {
 
 export function updateCustomer(id: string, data: Partial<Customer>) {
   return request<Customer>(`/customers/${id}/`, {
-    method: 'PUT',
+    method: 'PATCH',
     body: JSON.stringify(decamelize(data)),
   });
 }
@@ -151,7 +151,7 @@ export function createTransaction(data: Partial<Transaction>) {
 
 export function updateTransaction(id: string, data: Partial<Transaction>) {
   return request<Transaction>(`/transactions/${id}/`, {
-    method: 'PUT',
+    method: 'PATCH',
     body: JSON.stringify(decamelize(data)),
   });
 }
@@ -165,15 +165,28 @@ export function getUtangRecords() {
 }
 
 export function createUtangRecord(data: Partial<UtangRecord>) {
+  const payload: any = { ...data };
+  // DRF expects customer and transaction ids under 'customer' and 'transaction'
+  if (payload.customerId) {
+    payload.customer = payload.customerId;
+    delete payload.customerId;
+  }
+  if (payload.transactionId) {
+    payload.transaction = payload.transactionId;
+    delete payload.transactionId;
+  }
+  if (payload.dueDate instanceof Date) {
+    payload.dueDate = payload.dueDate.toISOString().split('T')[0];
+  }
   return request<UtangRecord>('/utang-records/', {
     method: 'POST',
-    body: JSON.stringify(decamelize(data)),
+    body: JSON.stringify(decamelize(payload)),
   });
 }
 
 export function updateUtangRecord(id: string, data: Partial<UtangRecord>) {
   return request<UtangRecord>(`/utang-records/${id}/`, {
-    method: 'PUT',
+    method: 'PATCH',
     body: JSON.stringify(decamelize(data)),
   });
 }
@@ -195,7 +208,7 @@ export function createPayment(data: Partial<Payment>) {
 
 export function updatePayment(id: string, data: Partial<Payment>) {
   return request<Payment>(`/payments/${id}/`, {
-    method: 'PUT',
+    method: 'PATCH',
     body: JSON.stringify(decamelize(data)),
   });
 }
