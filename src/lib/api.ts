@@ -138,21 +138,36 @@ export function deleteCustomer(id: string) {
 }
 
 export function getTransactions() {
-  return request<Transaction[]>('/transactions/');
+  return request<any[]>('/transactions/').then(transactions =>
+    transactions.map(t => ({
+      ...t,
+      customerId: (t as any).customer ?? t.customerId,
+    })) as Transaction[]
+  );
 }
 
 export function createTransaction(data: Partial<Transaction>) {
-  console.log('Creating transaction with data:', decamelize(data));
+  const payload: any = { ...data };
+  if (payload.customerId) {
+    payload.customer = payload.customerId;
+    delete payload.customerId;
+  }
+  console.log('Creating transaction with data:', decamelize(payload));
   return request<Transaction>('/transactions/', {
     method: 'POST',
-    body: JSON.stringify(decamelize(data)),
+    body: JSON.stringify(decamelize(payload)),
   });
 }
 
 export function updateTransaction(id: string, data: Partial<Transaction>) {
+  const payload: any = { ...data };
+  if (payload.customerId) {
+    payload.customer = payload.customerId;
+    delete payload.customerId;
+  }
   return request<Transaction>(`/transactions/${id}/`, {
     method: 'PATCH',
-    body: JSON.stringify(decamelize(data)),
+    body: JSON.stringify(decamelize(payload)),
   });
 }
 
@@ -161,7 +176,13 @@ export function deleteTransaction(id: string) {
 }
 
 export function getUtangRecords() {
-  return request<UtangRecord[]>('/utang-records/');
+  return request<any[]>('/utang-records/').then(records =>
+    records.map(r => ({
+      ...r,
+      customerId: (r as any).customer ?? r.customerId,
+      transactionId: (r as any).transaction ?? r.transactionId,
+    })) as UtangRecord[]
+  );
 }
 
 export function createUtangRecord(data: Partial<UtangRecord>) {

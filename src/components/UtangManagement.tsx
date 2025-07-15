@@ -22,7 +22,7 @@ interface ConsolidatedUtangRecord {
 }
 
 const UtangManagement = () => {
-  const { utangRecords, transactions, addPayment } = useStore();
+  const { utangRecords, transactions, customers, addPayment } = useStore();
   const { toast } = useToast();
   
   const [selectedCustomer, setSelectedCustomer] = useState<ConsolidatedUtangRecord | null>(null);
@@ -33,7 +33,12 @@ const UtangManagement = () => {
 
   // Group utang records by customer
   const consolidatedRecords: ConsolidatedUtangRecord[] = utangRecords.reduce((acc, record) => {
-    const existingCustomer = acc.find(c => c.customerId === record.customerId);
+    const customerId = (record as any).customerId ?? (record as any).customer;
+    const customerName = 
+      record.customerName ||
+      customerId.find(c => c.id === customerId)?.name ||
+      "";
+      const existingCustomer = acc.find(c => c.customerId === customerId);
     if (existingCustomer) {
       existingCustomer.records.push(record);
       existingCustomer.totalAmount += record.amount;
@@ -55,8 +60,8 @@ const UtangManagement = () => {
         0
       );
       acc.push({
-        customerId: record.customerId,
-        customerName: record.customerName,
+        customerId,
+        customerName,
         records: [record],
         totalAmount: record.amount,
         totalPaid: recordPaid,
