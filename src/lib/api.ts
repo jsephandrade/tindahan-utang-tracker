@@ -96,16 +96,17 @@ export function getProducts() {
 }
 
 export function createProduct(data: Partial<Product>) {
+  console.log('Creating product with data:', decamelize(data));
   return request<Product>('/products/', {
     method: 'POST',
-    body: JSON.stringify(decamelize),
+    body: JSON.stringify(decamelize(data)),
   });
 }
 
 export function updateProduct(id: string, data: Partial<Product>) {
   return request<Product>(`/products/${id}/`, {
     method: 'PUT',
-    body: JSON.stringify(decamelize),
+    body: JSON.stringify(decamelize(data)),
   });
 }
 
@@ -118,9 +119,10 @@ export function getCustomers() {
 }
 
 export function createCustomer(data: Partial<Customer>) {
+  console.log('Creating customer with data:', decamelize(data));
   return request<Customer>('/customers/', {
     method: 'POST',
-    body: JSON.stringify(decamelize),
+    body: JSON.stringify(decamelize(data)),
   });
 }
 
@@ -140,9 +142,10 @@ export function getTransactions() {
 }
 
 export function createTransaction(data: Partial<Transaction>) {
+  console.log('Creating transaction with data:', decamelize(data));
   return request<Transaction>('/transactions/', {
     method: 'POST',
-    body: JSON.stringify(decamelize),
+    body: JSON.stringify(decamelize(data)),
   });
 }
 
