@@ -67,7 +67,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     getProducts().then(setProducts).catch(console.error);
     getCustomers().then(setCustomers).catch(console.error);
     getTransactions().then(setTransactions).catch(console.error);
-    getUtangRecords().then(setUtangRecords).catch(console.error);
+    getUtangRecords()
+      .then(records =>
+        setUtangRecords(records.map(r => ({ ...r, payments: r.payments ?? [] })))
+      )
+      .catch(console.error);
   }, []);
 
   const addProduct = async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => {
@@ -139,7 +143,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     recordData: Omit<UtangRecord, 'id' | 'createdAt'>,
   ) => {
     const created = (await createUtangRecord(recordData)) as UtangRecord;
-    setUtangRecords(prev => [...prev, created]);
+    setUtangRecords(prev => [
+      ...prev,
+      { ...created, payments: created.payments ?? [] },
+    ]);
 
     const customer = customers.find(c => c.id === recordData.customerId);
     if (customer) {
@@ -154,7 +161,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setUtangRecords(prev =>
       prev.map(record => {
         if (record.id === utangId) {
-          const totalPaid = [...record.payments, created].reduce((sum, p) => sum + p.amount, 0);
+          const currentPayments = record.payments ?? [];
+          const totalPaid = [...currentPayments, created].reduce((sum, p) => sum + p.amount, 0);
           const status = totalPaid >= record.amount ? 'paid' : 'partial';
           
           // Update customer total utang
@@ -167,7 +175,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
           return {
             ...record,
-            payments: [...record.payments, created],
+            payments: [...currentPayments, created],
             status: status as 'unpaid' | 'partial' | 'paid',
           };
         }
@@ -188,7 +196,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const updateUtangRecord = async (id: string, updates: Partial<UtangRecord>) => {
     const updated = await updateUtangRecordApi(id, updates);
-    setUtangRecords(prev => prev.map(r => (r.id === id ? (updated as UtangRecord) : r)));
+    setUtangRecords(prev =>
+      prev.map(r => (r.id === id ? { ...r, ...updated } : r))
+    );
   };
 
   const deleteUtangRecord = async (id: string) => {
@@ -201,7 +211,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setUtangRecords(prev =>
       prev.map(record => ({
         ...record,
-        payments: record.payments.map(p => (p.id === id ? (updated as Payment) : p)),
+        payments: (record.payments ?? []).map(p =>
+          p.id === id ? (updated as Payment) : p
+        ),
       }))
     );
   };
@@ -211,7 +223,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setUtangRecords(prev =>
       prev.map(record => ({
         ...record,
-        payments: record.payments.filter(p => p.id !== id),
+        payments: (record.payments ?? []).filter(p => p.id !== id),
       }))
     );
   };

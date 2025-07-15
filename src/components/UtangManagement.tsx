@@ -37,7 +37,10 @@ const UtangManagement = () => {
     if (existingCustomer) {
       existingCustomer.records.push(record);
       existingCustomer.totalAmount += record.amount;
-      const recordPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
+      const recordPaid = (record.payments ?? []).reduce(
+        (sum, p) => sum + p.amount,
+        0
+      );
       existingCustomer.totalPaid += recordPaid;
       if (new Date(record.createdAt as any) > existingCustomer.latestDate) {
         existingCustomer.latestDate = new Date(record.createdAt as any);
@@ -47,7 +50,10 @@ const UtangManagement = () => {
         existingCustomer.earliestDueDate = record.dueDate;
       }
     } else {
-      const recordPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
+      const recordPaid = (record.payments ?? []).reduce(
+        (sum, p) => sum + p.amount,
+        0
+      );
       acc.push({
         customerId: record.customerId,
         customerName: record.customerName,
@@ -104,7 +110,10 @@ const UtangManagement = () => {
     let remainingPayment = paymentAmount;
     for (const record of selectedCustomer.records) {
       if (remainingPayment <= 0) break;
-      const recordPaid = record.payments.reduce((sum, p) => sum + p.amount, 0);
+      const recordPaid = (record.payments ?? []).reduce(
+        (sum, p) => sum + p.amount,
+        0
+      );
       const recordBalance = record.amount - recordPaid;
       if (recordBalance > 0) {
         const paymentForThisRecord = Math.min(remainingPayment, recordBalance);
