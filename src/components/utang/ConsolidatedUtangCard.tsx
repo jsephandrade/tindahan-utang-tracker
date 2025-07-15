@@ -64,6 +64,9 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
 
   const allItems = getAllTransactionItems(consolidated);
   const allPayments = consolidated.records.flatMap(r => r.payments);
+  const dueDate = consolidated.earliestDueDate
+    ? new Date(consolidated.earliestDueDate as any)
+    : undefined;
 
   return (
     <Card className={`hover:shadow-md transition-shadow ${consolidated.isOverdue ? 'border-red-300 bg-red-50/30' : ''}`}>
@@ -91,14 +94,18 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
                 <Calendar className="h-4 w-4" />
                 <span>Latest: {consolidated.latestDate.toLocaleDateString()}</span>
               </div>
-              {consolidated.earliestDueDate && (
-                <div className={`flex items-center gap-1 ${consolidated.isOverdue ? 'text-red-600 font-medium' : ''}`}>
+              {dueDate && (
+                <div
+                  className={`flex items-center gap-1 ${
+                    consolidated.isOverdue ? 'text-red-600 font-medium' : ''
+                  }`}
+                >
                   <Calendar className="h-4 w-4" />
                   <span>
-                    Due: {consolidated.earliestDueDate.toLocaleDateString()}
+                    Due: {dueDate.toLocaleDateString()}
                     {consolidated.isOverdue && (
                       <span className="ml-1">
-                        ({getDaysOverdue(consolidated.earliestDueDate)} days overdue)
+                        ({getDaysOverdue(dueDate)} days overdue)
                       </span>
                     )}
                   </span>
@@ -121,7 +128,10 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
                     </div>
                   </div>
                   {allItems.map((item, index) => (
-                    <div key={`${item.transactionId}-${index}`} className="flex justify-between items-start">
+                    <div
+                      key={`${item.transactionId}-${item.productId}-${index}`}
+                      className="flex justify-between items-start"
+                    >
                       <div className="flex-1 pr-2">
                         <span className="text-xs">{item.productName}</span>
                         <div className="text-xs text-muted-foreground">
