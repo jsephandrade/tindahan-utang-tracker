@@ -61,7 +61,7 @@ function decamelize(obj: any): any {
 // Convert numeric strings for known numeric fields to actual numbers
 const numericKeyPattern = /(price|amount|total|stock|quantity|utang|sales|paid|change|balance)/i;
 // Recognize date-like keys to convert ISO strings to Date objects
-const dateKeyPattern = /(date|createdAt|updatedAt|due|dueDate|lastTransaction)/i;
+const dateKeyPattern = /(date|created_?at|updated_?at|due_?date|last_?transaction)/i;
 
 function convertNumbers(obj: any): any {
   if (Array.isArray(obj)) {
@@ -76,6 +76,8 @@ function convertNumbers(obj: any): any {
 }
 
 function convertValue(key: string, value: any) {
+  if (value === null || value === undefined) return value;
+  
   if (typeof value === 'string') {
     if (numericKeyPattern.test(key)) {
       const num = parseFloat(value);
@@ -83,8 +85,11 @@ function convertValue(key: string, value: any) {
         return num;
       }
     }
-    if (dateKeyPattern.test(key) && !isNaN(Date.parse(value))) {
-      return new Date(value);
+    if (dateKeyPattern.test(key)) {
+      const date = new Date(value);
+      if (!isNaN(date.getTime())) {
+        return date;
+      }
     }
   }
   return value;

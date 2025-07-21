@@ -38,7 +38,17 @@ const UtangManagement = () => {
       record.customerName ||
       customers.find(c => c.id === customerId)?.name ||
       "";
-      const existingCustomer = acc.find(c => c.customerId === customerId);
+
+    // Ensure dates are properly converted to Date objects
+    const recordCreatedAt = record.createdAt instanceof Date 
+      ? record.createdAt 
+      : new Date(record.createdAt);
+    
+    const recordDueDate = record.dueDate 
+      ? (record.dueDate instanceof Date ? record.dueDate : new Date(record.dueDate))
+      : undefined;
+
+    const existingCustomer = acc.find(c => c.customerId === customerId);
     if (existingCustomer) {
       existingCustomer.records.push(record);
       existingCustomer.totalAmount += record.amount;
@@ -47,12 +57,12 @@ const UtangManagement = () => {
         0
       );
       existingCustomer.totalPaid += recordPaid;
-      if (new Date(record.createdAt as any) > existingCustomer.latestDate) {
-        existingCustomer.latestDate = new Date(record.createdAt as any);
+      if (recordCreatedAt > existingCustomer.latestDate) {
+        existingCustomer.latestDate = recordCreatedAt;
       }
       // Update earliest due date
-      if (record.dueDate && (!existingCustomer.earliestDueDate || record.dueDate < existingCustomer.earliestDueDate)) {
-        existingCustomer.earliestDueDate = record.dueDate;
+      if (recordDueDate && (!existingCustomer.earliestDueDate || recordDueDate < existingCustomer.earliestDueDate)) {
+        existingCustomer.earliestDueDate = recordDueDate;
       }
     } else {
       const recordPaid = (record.payments ?? []).reduce(
@@ -67,8 +77,8 @@ const UtangManagement = () => {
         totalPaid: recordPaid,
         remainingBalance: 0, // Will be calculated below
         status: 'unpaid', // Will be calculated below
-        latestDate: new Date(record.createdAt as any),
-        earliestDueDate: record.dueDate,
+        latestDate: recordCreatedAt,
+        earliestDueDate: recordDueDate,
         isOverdue: false // Will be calculated below
       });
     }
