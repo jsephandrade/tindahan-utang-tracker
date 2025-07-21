@@ -125,11 +125,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setTransactions(prev => [...prev, transactionWithItems]);
     
     // Update product stock
-    transactionData.items.forEach(item => {
-      updateProduct(item.productId, {
-        stock: products.find(p => p.id === item.productId)!.stock - item.quantity
-      });
-    });
+    await Promise.all(
+      transactionData.items.map(item =>
+        updateProduct(item.productId, {
+          stock:
+            products.find(p => p.id === item.productId)!.stock - item.quantity,
+        })
+      )
+    );
     
     // Create utang record if needed
     if (transactionData.utangAmount > 0 && transactionData.customerId) {
@@ -158,7 +161,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const customer = customers.find(c => c.id === recordData.customerId);
     if (customer) {
-      updateCustomer(customer.id, {
+      await updateCustomer(customer.id, {
         totalUtang: customer.totalUtang + recordData.amount,
       });
     }
@@ -172,6 +175,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       // Backend requires a date value for each payment
       date: new Date(),
     })) as Payment;
+    // Move the customer update logic outside of setUtangRecords to avoid using 'await' inside a synchronous callback
+    const recordToUpdate = utangRecords.find(record => record.id === utangId);
+    if (recordToUpdate) {
+      const customer = customers.find(c => c.id === recordToUpdate.customerId);
+      if (customer) {
+        await updateCustomer(customer.id, {
+          totalUtang: customer.totalUtang - amount,
+        });
+      }
+    }
     setUtangRecords(prev =>
       prev.map(record => {
         if (record.id === utangId) {
