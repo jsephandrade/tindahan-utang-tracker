@@ -8,6 +8,7 @@ import { useStore } from "@/contexts/StoreContext";
 import { Customer } from "@/types/store";
 import { Users, Plus, Edit, Phone, CreditCard, Calendar, TrendingUp, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { formatDate, parseDate } from "@/utils/date";
 
 const CustomerManagement = () => {
   const {
@@ -190,10 +191,10 @@ const CustomerManagement = () => {
                   <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">New This Month</p>
                   <p className="text-2xl font-bold text-gray-900">
                     {customers.filter(c => {
-                    const thisMonth = new Date().getMonth();
-                    const createdMonth = new Date(c.createdAt as any).getMonth();
-                    return createdMonth === thisMonth;
-                  }).length}
+                      const thisMonth = new Date().getMonth();
+                      const created = parseDate(c.createdAt);
+                      return created ? created.getMonth() === thisMonth : false;
+                    }).length}
                   </p>
                 </div>
               </div>
@@ -229,7 +230,7 @@ const CustomerManagement = () => {
                               {/* <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <Calendar className="h-4 w-4" />
                                 <span>
-                                  Since {new Date(customer.createdAt as any).toLocaleDateString()}
+                                  Since {formatDate(customer.createdAt)}
                                 </span>
                               </div> */}
                               {customer.phone && <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -295,7 +296,7 @@ RECORDS</p>
                                       <div className="flex items-center gap-2 mb-1">
                                         <span className="font-semibold text-gray-900">P{record.amount.toFixed(2)}</span>
                                         <span className="text-xs text-muted-foreground">
-                                            • {new Date(record.createdAt as any).toLocaleDateString()}
+                                            • {formatDate(record.createdAt)}
                                           </span>
                                       </div>
                                       {balance > 0 && <div className="text-sm text-red-600 font-medium">
