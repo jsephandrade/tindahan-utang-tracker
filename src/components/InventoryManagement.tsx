@@ -9,6 +9,7 @@ import { Product } from "@/types/store";
 import { Package, Plus, Edit, Trash2, AlertTriangle, Barcode, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { add } from "date-fns";
+import { parseNonNegativeNumber } from "@/utils/number";
 
 const InventoryManagement = () => {
   const { products, addProduct, updateProduct, deleteProduct } = useStore();
@@ -162,7 +163,12 @@ const InventoryManagement = () => {
                     id="price"
                     type="number"
                     value={productForm.price}
-                    onChange={(e) => setProductForm({ ...productForm, price: Number(e.target.value) })}
+                    onChange={(e) => {
+                      const value = parseNonNegativeNumber(e.target.value);
+                      if (value !== null) {
+                        setProductForm({ ...productForm, price: value });
+                      }
+                    }}
                     placeholder="0.00"
                   />
                 </div>
@@ -173,7 +179,12 @@ const InventoryManagement = () => {
                     id="stock"
                     type="number"
                     value={productForm.stock}
-                    onChange={(e) => setProductForm({ ...productForm, stock: Number(e.target.value) })}
+                    onChange={(e) => {
+                      const value = parseNonNegativeNumber(e.target.value);
+                      if (value !== null) {
+                        setProductForm({ ...productForm, stock: value });
+                      }
+                    }}
                     placeholder="0"
                   />
                 </div>
@@ -186,7 +197,12 @@ const InventoryManagement = () => {
                     id="minStock"
                     type="number"
                     value={productForm.minStock}
-                    onChange={(e) => setProductForm({ ...productForm, minStock: Number(e.target.value) })}
+                    onChange={(e) => {
+                      const value = parseNonNegativeNumber(e.target.value);
+                      if (value !== null) {
+                        setProductForm({ ...productForm, minStock: value });
+                      }
+                    }}
                     placeholder="0"
                   />
                 </div>
@@ -381,7 +397,12 @@ const InventoryManagement = () => {
                   id="edit-price"
                   type="number"
                   value={productForm.price}
-                  onChange={(e) => setProductForm({ ...productForm, price: Number(e.target.value) })}
+                  onChange={(e) => {
+                    const value = parseNonNegativeNumber(e.target.value);
+                    if (value !== null) {
+                      setProductForm({ ...productForm, price: value });
+                    }
+                  }}
                   placeholder="0.00"
                 />
               </div>
@@ -392,7 +413,12 @@ const InventoryManagement = () => {
                   id="edit-stock"
                   type="number"
                   value={productForm.stock}
-                  onChange={(e) => setProductForm({ ...productForm, stock: Number(e.target.value) })}
+                  onChange={(e) => {
+                    const value = parseNonNegativeNumber(e.target.value);
+                    if (value !== null) {
+                      setProductForm({ ...productForm, stock: value });
+                    }
+                  }}
                   placeholder="0"
                 />
               </div>
@@ -405,7 +431,12 @@ const InventoryManagement = () => {
                   id="edit-minStock"
                   type="number"
                   value={productForm.minStock}
-                  onChange={(e) => setProductForm({ ...productForm, minStock: Number(e.target.value) })}
+                  onChange={(e) => {
+                    const value = parseNonNegativeNumber(e.target.value);
+                    if (value !== null) {
+                      setProductForm({ ...productForm, minStock: value });
+                    }
+                  }}
                   placeholder="0"
                 />
               </div>

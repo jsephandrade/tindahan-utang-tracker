@@ -76,14 +76,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const addProduct = async (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => {
     const created = await createProduct(productData);
-    setProducts(prev => [...prev, created as Product]);
+    setProducts(prev => [...prev, created]);
   };
 
   const updateProduct = async (id: string, updates: Partial<Product>) => {
     const updated = await updateProductApi(id, updates);
-    setProducts(prev =>
-      prev.map(product => (product.id === id ? (updated as Product) : product))
-    );
+    setProducts(prev => prev.map(product => (product.id === id ? updated : product)));
   };
 
   const deleteProduct = async (id: string) => {
@@ -95,13 +93,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     customerData: Omit<Customer, 'id' | 'createdAt' | 'totalUtang'>,
   ) => {
     const created = await createCustomer(customerData);
-    setCustomers(prev => [...prev, created as Customer]);
+    setCustomers(prev => [...prev, created]);
   };
 
   const updateCustomer = async (id: string, updates: Partial<Customer>) => {
     const updated = await updateCustomerApi(id, updates);
     setCustomers(prev =>
-      prev.map(customer => (customer.id === id ? (updated as Customer) : customer))
+      prev.map(customer => (customer.id === id ? updated : customer))
     );
   };
 
@@ -113,7 +111,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const addTransaction = async (
     transactionData: Omit<Transaction, 'id' | 'createdAt'>,
   ) => {
-    const created = (await createTransaction(transactionData)) as Transaction;
+    const created = await createTransaction(transactionData);
     // DRF doesn't return the nested items or customer info, so merge them from
     // the data we already have to keep our local state consistent
     const transactionWithItems: Transaction = {
@@ -153,7 +151,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const addUtangRecord = async (
     recordData: Omit<UtangRecord, 'id' | 'createdAt'>,
   ) => {
-    const created = (await createUtangRecord(recordData)) as UtangRecord;
+    const created = await createUtangRecord(recordData);
     setUtangRecords(prev => [
       ...prev,
       { ...created, payments: created.payments ?? [] },
@@ -168,13 +166,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const addPayment = async (utangId: string, amount: number, note?: string) => {
-    const created = (await createPayment({
+    const created = await createPayment({
       utang_record: utangId,
       amount,
       note,
       // Backend requires a date value for each payment
       date: new Date(),
-    })) as Payment;
+    });
     // Move the customer update logic outside of setUtangRecords to avoid using 'await' inside a synchronous callback
     const recordToUpdate = utangRecords.find(record => record.id === utangId);
     if (recordToUpdate) {
@@ -191,15 +189,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           const currentPayments = record.payments ?? [];
           const totalPaid = [...currentPayments, created].reduce((sum, p) => sum + p.amount, 0);
           const status = totalPaid >= record.amount ? 'paid' : 'partial';
-          
-          // Update customer total utang
-          const customer = customers.find(c => c.id === record.customerId);
-          if (customer) {
-            updateCustomer(customer.id, {
-              totalUtang: customer.totalUtang - amount,
-            });
-          }
-
           return {
             ...record,
             payments: [...currentPayments, created],
@@ -213,7 +202,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const updateTransaction = async (id: string, updates: Partial<Transaction>) => {
     const updated = await updateTransactionApi(id, updates);
-    setTransactions(prev => prev.map(t => (t.id === id ? (updated as Transaction) : t)));
+    setTransactions(prev => prev.map(t => (t.id === id ? updated : t)));
   };
 
   const deleteTransaction = async (id: string) => {
@@ -239,7 +228,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       prev.map(record => ({
         ...record,
         payments: (record.payments ?? []).map(p =>
-          p.id === id ? (updated as Payment) : p
+          p.id === id ? updated : p
         ),
       }))
     );
@@ -264,7 +253,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const lowStockItems = products.filter(p => p.stock <= p.minStock).length;
     const totalCustomers = customers.length;
     const dailySales = transactions
-      .filter(t => t.createdAt >= startOfDay)
+      .filter(t => new Date(t.createdAt as any) >= startOfDay)
       .reduce((sum, t) => sum + t.totalAmount, 0);
     const monthlyUtang = utangRecords
       .filter(r => new Date(r.createdAt as any).getMonth() === today.getMonth())

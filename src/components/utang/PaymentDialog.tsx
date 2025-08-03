@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UtangRecord } from "@/types/store";
+import { parseNonNegativeNumber } from "@/utils/number";
 
 interface ConsolidatedUtangRecord {
   customerId: string;
@@ -60,12 +61,17 @@ const PaymentDialog = ({
             
             <div>
               <Label htmlFor="payment-amount">Payment Amount *</Label>
-              <Input 
-                id="payment-amount" 
-                type="number" 
-                value={paymentAmount} 
-                onChange={e => setPaymentAmount(Number(e.target.value))} 
-                placeholder="0.00" 
+              <Input
+                id="payment-amount"
+                type="number"
+                value={paymentAmount}
+                onChange={e => {
+                  const value = parseNonNegativeNumber(e.target.value);
+                  if (value !== null) {
+                    setPaymentAmount(value);
+                  }
+                }}
+                placeholder="0.00"
                 max={selectedCustomer.remainingBalance} 
               />
             </div>

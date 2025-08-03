@@ -6,22 +6,59 @@ import type {
   UtangRecord,
 } from '@/types/store';
 
-const BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  import.meta.env.VITE_API_URL_PROD ||
-  'http://localhost:8080/api';
+const envBaseUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_URL_PROD;
+if (!envBaseUrl) {
+  throw new Error('API base URL is not configured. Please set VITE_API_URL.');
+}
+const BASE_URL = envBaseUrl;
+
+export class ApiError extends Error {
+  status?: number;
+  info?: unknown;
+  constructor(message: string, status?: number, info?: unknown) {
+    super(message);
+    this.status = status;
+    this.info = info;
+  }
+}
 
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${url}`, {
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  });
-  if (!res.ok) {
-    throw new Error(`Request failed: ${res.status}`);
+  try {
+    const res = await fetch(`${BASE_URL}${url}`, {
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      ...options,
+    });
+
+    let data: unknown = null;
+    const contentType = res.headers.get('Content-Type');
+    if (contentType && contentType.includes('application/json')) {
+      data = await res.json();
+    } else {
+      data = await res.text();
+    }
+
+    if (!res.ok) {
+      let message = `Request failed: ${res.status}`;
+      if (data && typeof data === 'object') {
+        const d = data as Record<string, unknown>;
+        if (typeof d.detail === 'string') {
+          message = d.detail;
+        } else if (typeof d.message === 'string') {
+          message = d.message;
+        }
+      }
+      throw new ApiError(message, res.status, data);
+    }
+
+    return convertNumbers(camelize(data)) as T;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    throw new ApiError(`Network error: ${message}`);
   }
-  const data = await res.json();
-  return convertNumbers(camelize(data)) as T;
 }
 
 function camelize(obj: any): any {
@@ -101,7 +138,9 @@ export function getProducts() {
 }
 
 export function createProduct(data: Partial<Product>) {
-  console.log('Creating product with data:', decamelize(data));
+  if (import.meta.env.DEV) {
+    console.log('Creating product with data:', decamelize(data));
+  }
   return request<Product>('/products/', {
     method: 'POST',
     body: JSON.stringify(decamelize(data)),
@@ -124,7 +163,9 @@ export function getCustomers() {
 }
 
 export function createCustomer(data: Partial<Customer>) {
-  console.log('Creating customer with data:', decamelize(data));
+  if (import.meta.env.DEV) {
+    console.log('Creating customer with data:', decamelize(data));
+  }
   return request<Customer>('/customers/', {
     method: 'POST',
     body: JSON.stringify(decamelize(data)),
@@ -165,7 +206,9 @@ export function createTransaction(data: Partial<Transaction>) {
     payload.customer = payload.customerId;
     delete payload.customerId;
   }
-  console.log('Creating transaction with data:', decamelize(payload));
+  if (import.meta.env.DEV) {
+    console.log('Creating transaction with data:', decamelize(payload));
+  }
   return request<Transaction>('/transactions/', {
     method: 'POST',
     body: JSON.stringify(decamelize(payload)),

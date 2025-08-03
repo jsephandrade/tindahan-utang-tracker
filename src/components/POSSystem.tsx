@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,8 @@ import { useStore } from "@/contexts/StoreContext";
 import { Product, TransactionItem } from "@/types/store";
 import { ShoppingCart, Plus, Minus, Trash2, User, Filter, Package, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { parseNonNegativeNumber } from "@/utils/number";
+
 const POSSystem = () => {
   const {
     products,
@@ -87,17 +89,17 @@ const POSSystem = () => {
   const removeFromCart = (productId: string) => {
     setCart(cart.filter(item => item.productId !== productId));
   };
-  const getTotalAmount = () => {
+  const getTotalAmount = useCallback(() => {
     return cart.reduce((sum, item) => sum + item.total, 0);
-  };
-  const getChange = () => {
+  }, [cart]);
+  const getChange = useCallback(() => {
     const total = getTotalAmount();
     if (paymentMethod === 'cash') {
       return Math.max(0, amountPaid - total);
     }
     return 0;
-  };
-  const getUtangAmount = () => {
+  }, [getTotalAmount, paymentMethod, amountPaid]);
+  const getUtangAmount = useCallback(() => {
     const total = getTotalAmount();
     if (paymentMethod === 'utang') {
       return total;
@@ -105,7 +107,7 @@ const POSSystem = () => {
       return Math.max(0, total - amountPaid);
     }
     return 0;
-  };
+  }, [getTotalAmount, paymentMethod, amountPaid]);
   const processTransaction = () => {
     if (cart.length === 0) {
       toast({
@@ -330,7 +332,18 @@ const POSSystem = () => {
 
             {paymentMethod !== 'utang' && <div>
                 <Label htmlFor="amount-paid">Amount Paid</Label>
-                <Input id="amount-paid" type="number" value={amountPaid} onChange={e => setAmountPaid(Number(e.target.value))} placeholder="0.00" />
+                <Input
+                  id="amount-paid"
+                  type="number"
+                  value={amountPaid}
+                  onChange={e => {
+                    const value = parseNonNegativeNumber(e.target.value);
+                    if (value !== null) {
+                      setAmountPaid(value);
+                    }
+                  }}
+                  placeholder="0.00"
+                />
               </div>}
 
             {paymentMethod === 'cash' && amountPaid > 0 && <div className="text-sm">
