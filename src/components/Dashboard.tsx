@@ -12,6 +12,7 @@ import {
   ArrowDown,
   Clock
 } from "lucide-react";
+import {formatDate, parseDate} from "@/utils/date";
 
 const Dashboard = () => {
   const { getDashboardStats, products, utangRecords } = useStore();
@@ -23,7 +24,8 @@ const Dashboard = () => {
     .filter(r => r.status === 'unpaid')
     .sort(
       (a, b) =>
-        new Date(b.createdAt as any).getTime() - new Date(a.createdAt as any).getTime(),
+        (parseDate(b.createdAt)?.getTime() || 0) -
+        (parseDate(a.createdAt)?.getTime() || 0),
     )
     .slice(0, 5);
 
@@ -208,7 +210,7 @@ const Dashboard = () => {
                       </p>
                       <div className="flex items-center gap-1 mt-2 text-xs text-gray-500">
                         <Clock className="h-3 w-3" />
-                        {new Date(record.createdAt as any).toLocaleDateString()}
+                        {formatDate(record.createdAt)}
                       </div>
                     </div>
                     <div className="text-right ml-3">

@@ -3,7 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, DollarSign, ShoppingCart, AlertTriangle } from "lucide-react";
-import { UtangRecord, Transaction } from "@/types/store";
+import { UtangRecord, Transaction, TransactionItem } from "@/types/store";
+import { formatDate, parseDate } from "@/utils/date";
+
 
 interface ConsolidatedUtangRecord {
   customerId: string;
@@ -13,9 +15,13 @@ interface ConsolidatedUtangRecord {
   totalPaid: number;
   remainingBalance: number;
   status: 'unpaid' | 'partial' | 'paid';
-  latestDate: Date;
+  latestDate?: Date;
   earliestDueDate?: Date;
   isOverdue: boolean;
+}
+interface ItemWithDate extends TransactionItem {
+  transactionId: string;
+  date?: Date;
 }
 
 interface ConsolidatedUtangCardProps {
@@ -39,15 +45,15 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
   };
 
   const getAllTransactionItems = (consolidated: ConsolidatedUtangRecord) => {
-    const allItems: any[] = [];
+    const allItems: ItemWithDate[] = [];
     consolidated.records.forEach(record => {
       const transaction = transactions.find(t => t.id === record.transactionId);
       if (transaction?.items) {
-        transaction.items.forEach(item => {
+            transaction.items.forEach(item => {
           allItems.push({
             ...item,
             transactionId: record.transactionId,
-            date: new Date(record.createdAt as any),
+            date: parseDate(record.createdAt),
           });
         });
       }
@@ -64,9 +70,7 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
 
   const allItems = getAllTransactionItems(consolidated);
   const allPayments = consolidated.records.flatMap(r => r.payments);
-  const dueDate = consolidated.earliestDueDate
-    ? new Date(consolidated.earliestDueDate as any)
-    : undefined;
+  const dueDate = parseDate(consolidated.earliestDueDate);
 
   return (
     <Card className={`hover:shadow-md transition-shadow ${consolidated.isOverdue ? 'border-red-300 bg-red-50/30' : ''}`}>
@@ -92,7 +96,7 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
             <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                <span>Latest: {consolidated.latestDate.toLocaleDateString()}</span>
+                <span>Latest: {formatDate(consolidated.latestDate)}</span>
               </div>
               {dueDate && (
                 <div
@@ -102,7 +106,7 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
                 >
                   <Calendar className="h-4 w-4" />
                   <span>
-                    Due: {dueDate.toLocaleDateString()}
+                    Due: {formatDate(dueDate)}
                     {consolidated.isOverdue && (
                       <span className="ml-1">
                         ({getDaysOverdue(dueDate)} days overdue)
@@ -135,7 +139,7 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
                       <div className="flex-1 pr-2">
                         <span className="text-xs">{item.productName}</span>
                         <div className="text-xs text-muted-foreground">
-                          {item.date.toLocaleDateString()}
+                          {formatDate(item.date)}
                         </div>
                       </div>
                       <div className="text-right text-xs whitespace-nowrap">
@@ -196,9 +200,10 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
             </h4>
             <div className="space-y-2">
               {allPayments
-                .sort((a, b) =>
-                  new Date(b.date as any).getTime() -
-                  new Date(a.date as any).getTime(),
+                .sort(
+                  (a, b) =>
+                    (parseDate(b.date)?.getTime() || 0) -
+                    (parseDate(a.date)?.getTime() || 0),
                 )
                 .map((payment, idx) => (
                 <div
@@ -210,7 +215,7 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
                     {payment.note && <span className="text-muted-foreground ml-2">- {payment.note}</span>}
                   </div>
                   <span className="text-muted-foreground text-xs">
-                    {new Date(payment.date as any).toLocaleDateString()}
+                    {formatDate(payment.date)}
                   </span>
                 </div>
               ))}

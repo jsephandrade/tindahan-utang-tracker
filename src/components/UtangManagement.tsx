@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import UtangFilters from "./utang/UtangFilters";
 import ConsolidatedUtangCard from "./utang/ConsolidatedUtangCard";
 import PaymentDialog from "./utang/PaymentDialog";
+import { parseDate } from "@/utils/date";
 
 interface ConsolidatedUtangRecord {
   customerId: string;
@@ -16,7 +17,7 @@ interface ConsolidatedUtangRecord {
   totalPaid: number;
   remainingBalance: number;
   status: 'unpaid' | 'partial' | 'paid';
-  latestDate: Date;
+  latestDate?: Date;
   earliestDueDate?: Date;
   isOverdue: boolean;
 }
@@ -33,20 +34,18 @@ const UtangManagement = () => {
 
   // Group utang records by customer
   const consolidatedRecords: ConsolidatedUtangRecord[] = utangRecords.reduce((acc, record) => {
-    const customerId = (record as any).customerId ?? (record as any).customer;
+    const customerId =
+      'customerId' in record
+        ? (record as UtangRecord).customerId
+        : (record as { customer: string }).customer;
     const customerName =
       record.customerName ||
       customers.find(c => c.id === customerId)?.name ||
       "";
 
-    // Ensure dates are properly converted to Date objects
-    const recordCreatedAt = record.createdAt instanceof Date 
-      ? record.createdAt 
-      : new Date(record.createdAt);
-    
-    const recordDueDate = record.dueDate 
-      ? (record.dueDate instanceof Date ? record.dueDate : new Date(record.dueDate))
-      : undefined;
+    // Safely parse dates
+    const recordCreatedAt = parseDate(record.createdAt);
+    const recordDueDate = parseDate(record.dueDate);
 
     const existingCustomer = acc.find(c => c.customerId === customerId);
     if (existingCustomer) {
@@ -57,11 +56,17 @@ const UtangManagement = () => {
         0
       );
       existingCustomer.totalPaid += recordPaid;
-      if (recordCreatedAt > existingCustomer.latestDate) {
+      if (
+        recordCreatedAt &&
+        (!existingCustomer.latestDate || recordCreatedAt > existingCustomer.latestDate)
+      ) {
         existingCustomer.latestDate = recordCreatedAt;
       }
       // Update earliest due date
-      if (recordDueDate && (!existingCustomer.earliestDueDate || recordDueDate < existingCustomer.earliestDueDate)) {
+      if (
+        recordDueDate &&
+        (!existingCustomer.earliestDueDate || recordDueDate < existingCustomer.earliestDueDate)
+      ) {
         existingCustomer.earliestDueDate = recordDueDate;
       }
     } else {
