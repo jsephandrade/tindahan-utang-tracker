@@ -14,7 +14,7 @@ interface ConsolidatedUtangRecord {
   totalPaid: number;
   remainingBalance: number;
   status: 'unpaid' | 'partial' | 'paid';
-  latestDate: Date;
+  latestDate?: Date;
   earliestDueDate?: Date;
   isOverdue: boolean;
 }

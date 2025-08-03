@@ -17,10 +17,13 @@ interface ConsolidatedUtangRecord {
   totalPaid: number;
   remainingBalance: number;
   status: 'unpaid' | 'partial' | 'paid';
-  latestDate?: Date;
+  latestDate: Date;
   earliestDueDate?: Date;
   isOverdue: boolean;
 }
+
+const [selectedCustomer, setSelectedCustomer] =
+  useState<ConsolidatedUtangRecord | null>(null);
 
 const UtangManagement = () => {
   const { utangRecords, transactions, customers, addPayment } = useStore();
@@ -127,8 +130,14 @@ const UtangManagement = () => {
     }
 
     // Apply payment to the oldest unpaid record first
+    // Ensure records are processed from oldest to newest by creation date
+    const recordsByDate = [...selectedCustomer.records].sort(
+      (a, b) =>
+        (parseDate(a.createdAt)?.getTime() || 0) -
+        (parseDate(b.createdAt)?.getTime() || 0)
+    );
     let remainingPayment = paymentAmount;
-    for (const record of selectedCustomer.records) {
+    for (const record of recordsByDate) {
       if (remainingPayment <= 0) break;
       const recordPaid = (record.payments ?? []).reduce(
         (sum, p) => sum + p.amount,
