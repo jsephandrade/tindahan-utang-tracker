@@ -1,56 +1,63 @@
 
-import { Button } from "@/components/ui/button";
-
-interface ConsolidatedUtangRecord {
-  customerId: string;
-  customerName: string;
-  records: any[];
-  totalAmount: number;
-  totalPaid: number;
-  remainingBalance: number;
-  status: 'unpaid' | 'partial' | 'paid';
-  latestDate: Date;
-  earliestDueDate?: Date;
-  isOverdue: boolean;
-}
+import React from 'react';
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface UtangFiltersProps {
-  filterStatus: 'all' | 'unpaid' | 'partial' | 'paid';
-  setFilterStatus: (status: 'all' | 'unpaid' | 'partial' | 'paid') => void;
-  consolidatedRecords: ConsolidatedUtangRecord[];
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
+  statusFilter: string;
+  onStatusChange: (value: string) => void;
+  sortBy: string;
+  onSortChange: (value: string) => void;
 }
 
-const UtangFilters = ({ filterStatus, setFilterStatus, consolidatedRecords }: UtangFiltersProps) => {
+const UtangFilters = ({ 
+  searchTerm, 
+  onSearchChange, 
+  statusFilter, 
+  onStatusChange, 
+  sortBy, 
+  onSortChange 
+}: UtangFiltersProps) => {
+  const { t } = useLanguage();
+
   return (
-    <div className="flex flex-wrap gap-2">
-      <Button 
-        variant={filterStatus === 'all' ? 'default' : 'outline'} 
-        onClick={() => setFilterStatus('all')} 
-        className={`flex-shrink-0 min-w-0 px-3 py-2 ${filterStatus === 'all' ? 'bg-orange-600 hover:bg-orange-700' : ''}`}
-      >
-        <span className="whitespace-nowrap">All ({consolidatedRecords.length})</span>
-      </Button>
-      <Button 
-        variant={filterStatus === 'unpaid' ? 'default' : 'outline'} 
-        onClick={() => setFilterStatus('unpaid')} 
-        className={`flex-shrink-0 min-w-0 px-3 py-2 ${filterStatus === 'unpaid' ? 'bg-red-600 hover:bg-red-700' : ''}`}
-      >
-        <span className="whitespace-nowrap">Unpaid ({consolidatedRecords.filter(r => r.status === 'unpaid').length})</span>
-      </Button>
-      <Button 
-        variant={filterStatus === 'partial' ? 'default' : 'outline'} 
-        onClick={() => setFilterStatus('partial')} 
-        className={`flex-shrink-0 min-w-0 px-3 py-2 ${filterStatus === 'partial' ? 'bg-yellow-600 hover:bg-yellow-700' : ''}`}
-      >
-        <span className="whitespace-nowrap">Partial ({consolidatedRecords.filter(r => r.status === 'partial').length})</span>
-      </Button>
-      <Button 
-        variant={filterStatus === 'paid' ? 'default' : 'outline'} 
-        onClick={() => setFilterStatus('paid')} 
-        className={`flex-shrink-0 min-w-0 px-3 py-2 ${filterStatus === 'paid' ? 'bg-green-600 hover:bg-green-700' : ''}`}
-      >
-        <span className="whitespace-nowrap">Paid ({consolidatedRecords.filter(r => r.status === 'paid').length})</span>
-      </Button>
+    <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex-1">
+        <Input
+          placeholder={t('customer.searchPlaceholder')}
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className="max-w-sm"
+        />
+      </div>
+      
+      <div className="flex gap-2">
+        <Select value={statusFilter} onValueChange={onStatusChange}>
+          <SelectTrigger className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{t('common.all')}</SelectItem>
+            <SelectItem value="unpaid">{t('utang.unpaid')}</SelectItem>
+            <SelectItem value="partial">{t('utang.partial')}</SelectItem>
+            <SelectItem value="paid">{t('utang.paid')}</SelectItem>
+          </SelectContent>
+        </Select>
+        
+        <Select value={sortBy} onValueChange={onSortChange}>
+          <SelectTrigger className="w-40">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="amount">{t('utang.sortByAmount')}</SelectItem>
+            <SelectItem value="date">{t('utang.sortByDate')}</SelectItem>
+            <SelectItem value="name">{t('utang.sortByName')}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
     </div>
   );
 };

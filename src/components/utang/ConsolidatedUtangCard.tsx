@@ -5,32 +5,36 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, DollarSign, ShoppingCart, AlertTriangle } from "lucide-react";
 import { UtangRecord, Transaction, TransactionItem } from "@/types/store";
 import { formatDate, parseDate } from "@/utils/date";
-
+import { useStore } from '@/contexts/StoreContext';
 
 interface ConsolidatedUtangRecord {
   customerId: string;
   customerName: string;
+  customerPhone: string;
+  customerAddress: string;
   records: UtangRecord[];
   totalAmount: number;
   totalPaid: number;
   remainingBalance: number;
   status: 'unpaid' | 'partial' | 'paid';
-  latestDate?: Date;
+  latestDate: Date;
   earliestDueDate?: Date;
   isOverdue: boolean;
 }
+
 interface ItemWithDate extends TransactionItem {
   transactionId: string;
   date?: Date;
 }
 
 interface ConsolidatedUtangCardProps {
-  consolidated: ConsolidatedUtangRecord;
-  transactions: Transaction[];
-  onOpenPaymentDialog: (consolidated: ConsolidatedUtangRecord) => void;
+  record: ConsolidatedUtangRecord;
+  onPayment: (customer: ConsolidatedUtangRecord) => void;
 }
 
-const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog }: ConsolidatedUtangCardProps) => {
+const ConsolidatedUtangCard = ({ record, onPayment }: ConsolidatedUtangCardProps) => {
+  const { transactions } = useStore();
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'paid':
@@ -49,7 +53,7 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
     consolidated.records.forEach(record => {
       const transaction = transactions.find(t => t.id === record.transactionId);
       if (transaction?.items) {
-            transaction.items.forEach(item => {
+        transaction.items.forEach(item => {
           allItems.push({
             ...item,
             transactionId: record.transactionId,
@@ -68,24 +72,24 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
     return diffDays;
   };
 
-  const allItems = getAllTransactionItems(consolidated);
-  const allPayments = consolidated.records.flatMap(r => r.payments);
-  const dueDate = parseDate(consolidated.earliestDueDate);
+  const allItems = getAllTransactionItems(record);
+  const allPayments = record.records.flatMap(r => r.payments);
+  const dueDate = parseDate(record.earliestDueDate);
 
   return (
-    <Card className={`hover:shadow-md transition-shadow ${consolidated.isOverdue ? 'border-red-300 bg-red-50/30' : ''}`}>
+    <Card className={`hover:shadow-md transition-shadow ${record.isOverdue ? 'border-red-300 bg-red-50/30' : ''}`}>
       <CardContent className="p-4 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
           <div className="flex-1 space-y-3">
             <div className="flex items-center gap-3 mb-2">
-              <h3 className="text-lg font-semibold truncate">{consolidated.customerName}</h3>
-              <Badge className={getStatusColor(consolidated.status)}>
-                {consolidated.status.toUpperCase()}
+              <h3 className="text-lg font-semibold truncate">{record.customerName}</h3>
+              <Badge className={getStatusColor(record.status)}>
+                {record.status.toUpperCase()}
               </Badge>
               <Badge variant="outline" className="text-xs">
-                {consolidated.records.length} transaction{consolidated.records.length > 1 ? 's' : ''}
+                {record.records.length} transaction{record.records.length > 1 ? 's' : ''}
               </Badge>
-              {consolidated.isOverdue && (
+              {record.isOverdue && (
                 <Badge className="bg-red-100 text-red-800 flex items-center gap-1">
                   <AlertTriangle className="h-3 w-3" />
                   OVERDUE
@@ -96,18 +100,18 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
             <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                <span>Latest: {formatDate(consolidated.latestDate)}</span>
+                <span>Latest: {formatDate(record.latestDate)}</span>
               </div>
               {dueDate && (
                 <div
                   className={`flex items-center gap-1 ${
-                    consolidated.isOverdue ? 'text-red-600 font-medium' : ''
+                    record.isOverdue ? 'text-red-600 font-medium' : ''
                   }`}
                 >
                   <Calendar className="h-4 w-4" />
                   <span>
                     Due: {formatDate(dueDate)}
-                    {consolidated.isOverdue && (
+                    {record.isOverdue && (
                       <span className="ml-1">
                         ({getDaysOverdue(dueDate)} days overdue)
                       </span>
@@ -150,7 +154,7 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
                   <div className="border-t border-dashed border-gray-300 pt-1 mt-2">
                     <div className="flex justify-between font-bold text-sm">
                       <span>TOTAL</span>
-                      <span>P{consolidated.totalAmount.toFixed(2)}</span>
+                      <span>P{record.totalAmount.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>
@@ -161,26 +165,26 @@ const ConsolidatedUtangCard = ({ consolidated, transactions, onOpenPaymentDialog
           <div className="text-right space-y-2 flex-shrink-0">
             <div>
               <p className="text-sm text-muted-foreground">Total Amount</p>
-              <p className="text-xl font-bold">P{consolidated.totalAmount.toFixed(2)}</p>
+              <p className="text-xl font-bold">P{record.totalAmount.toFixed(2)}</p>
             </div>
             
-            {consolidated.totalPaid > 0 && (
+            {record.totalPaid > 0 && (
               <div>
                 <p className="text-sm text-muted-foreground">Paid</p>
-                <p className="text-lg font-semibold text-green-600">P{consolidated.totalPaid.toFixed(2)}</p>
+                <p className="text-lg font-semibold text-green-600">P{record.totalPaid.toFixed(2)}</p>
               </div>
             )}
             
-            {consolidated.remainingBalance > 0 && (
+            {record.remainingBalance > 0 && (
               <div>
                 <p className="text-sm text-muted-foreground">Balance</p>
-                <p className="text-lg font-semibold text-red-600">P{consolidated.remainingBalance.toFixed(2)}</p>
+                <p className="text-lg font-semibold text-red-600">P{record.remainingBalance.toFixed(2)}</p>
               </div>
             )}
             
-            {consolidated.status !== 'paid' && (
+            {record.status !== 'paid' && (
               <Button 
-                onClick={() => onOpenPaymentDialog(consolidated)} 
+                onClick={() => onPayment(record)} 
                 className="bg-orange-600 hover:bg-orange-700 w-full sm:w-auto" 
                 size="sm"
               >
